@@ -16,7 +16,8 @@ matrix:
       addons:
         sonarcloud:
           organization: imageworks
-          token: $SONAR_TOKEN
+          token:
+            secure: $SONAR_TOKEN
 
 env:
   global:
@@ -62,7 +63,7 @@ script:
     fi
   - ctest -V
   - if [[ "$TRAVIS_JOB_NAME" == *_sonar ]]; then
-      sonar-scanner;
+      sonar-scanner -X;
     fi
 
 cache:
