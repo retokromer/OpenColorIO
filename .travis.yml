@@ -65,6 +65,7 @@ script:
     fi
   - ctest -V
   - if [[ "$TRAVIS_JOB_NAME" == *_sonar ]]; then
+      cd ..;
       sonar-scanner -X;
     fi
 

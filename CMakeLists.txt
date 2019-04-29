@@ -117,7 +117,3 @@ add_subdirectory(src)
 if(OCIO_BUILD_DOCS)
 	add_subdirectory(docs)
 endif()
-
-###############################################################################
-# Copy root directory files to build area
-configure_file(sonar-project.properties ${CMAKE_CURRENT_BINARY_DIR}/sonar-project.properties COPYONLY)
