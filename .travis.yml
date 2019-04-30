@@ -23,7 +23,7 @@ matrix:
 
 env:
   global:
-    - OPTIONS="-DCMAKE_BUILD_TYPE=Release -DOCIO_BUILD_TESTS=ON -DOCIO_BUILD_GPU_TESTS=OFF -DOCIO_BUILD_DOCS=ON -DOCIO_WARNING_AS_ERROR=ON"
+    - OPTIONS="-DCMAKE_BUILD_TYPE=Debug -DOCIO_BUILD_TESTS=ON -DOCIO_BUILD_GPU_TESTS=OFF -DOCIO_BUILD_DOCS=OFF -DOCIO_WARNING_AS_ERROR=ON"
 
 # Install missing packages
 before_install:
@@ -54,21 +54,11 @@ before_install:
 
 # Run the Build script
 script:
-  - mkdir _build
-  - cd _build
-  - cmake .. -DCMAKE_INSTALL_PREFIX=../_install $OPTIONS $OPTIONS_BUILD
-  - if [[ "$TRAVIS_JOB_NAME" == linux_*_sonar ]];
-    then
-      build-wrapper-linux-x86-64 --out-dir bw-output make;
-      make install;
-    else
-      cmake --build . --target install;
-    fi
-  - ctest -V
-  - if [[ "$TRAVIS_JOB_NAME" == *_sonar ]]; then
-      cd ..;
-      sonar-scanner -X;
-    fi
+  - cmake -DCMAKE_INSTALL_PREFIX=_install $OPTIONS $OPTIONS_BUILD
+  - build-wrapper-linux-x86-64 --out-dir bw-output make clean all
+  - make test
+  - sonar-scanner
+
 
 cache:
   directories:
