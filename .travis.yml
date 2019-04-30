@@ -59,7 +59,8 @@ script:
   - cmake .. -DCMAKE_INSTALL_PREFIX=../_install $OPTIONS $OPTIONS_BUILD
   - if [[ "$TRAVIS_JOB_NAME" == linux_*_sonar ]];
     then
-      build-wrapper-linux-x86-64 --out-dir bw-output cmake --build . --target install;
+      build-wrapper-linux-x86-64 --out-dir bw-output make;
+      make install;
     else
       cmake --build . --target install;
     fi
