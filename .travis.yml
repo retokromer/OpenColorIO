@@ -31,7 +31,7 @@ before_install:
     fi
 
 install:
-  - git fetch --unshallow --no-tags +refs/heads/master:refs/remotes/origin/master
+  - git fetch --unshallow --no-tags https://github.com/imageworks/OpenColorIO.git +refs/heads/master:refs/remotes/origin/master
 
 # Run the Build script
 script:
