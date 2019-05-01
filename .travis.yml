@@ -18,10 +18,6 @@ matrix:
           organization: imageworks
           token: $SONAR_TOKEN
 
-env:
-  global:
-    - OPTIONS="-DCMAKE_BUILD_TYPE=Debug -DOCIO_BUILD_TESTS=ON -DOCIO_BUILD_GPU_TESTS=OFF -DOCIO_BUILD_DOCS=OFF -DOCIO_WARNING_AS_ERROR=ON"
-
 # Install missing packages
 before_install:
   # Linux ones
@@ -33,42 +29,17 @@ before_install:
       sh cmake-3.12.2-Linux-x86_64.sh -- --skip-license --prefix=${TRAVIS_BUILD_DIR}/_cmake;
       export PATH="${TRAVIS_BUILD_DIR}/_cmake/bin:$PATH";
     fi
-  # OSX ones
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      brew update;
-      brew install glew;
-      brew upgrade cmake;
-      brew upgrade pyenv;
-      echo 'eval "$(pyenv init -)"' >> .bash_profile;
-      source .bash_profile;
-      export PYTHON_CONFIGURE_OPTS="--enable-framework";
-      pyenv install -v 2.7.15;
-      pyenv global 2.7.15;
-      export OPTIONS="$OPTIONS -DPYTHON_LIBRARY=$(python-config --prefix)/lib/libpython2.7.dylib";
-      export OPTIONS="$OPTIONS -DPYTHON_INCLUDE_DIR=$(python-config --prefix)/include/python2.7";
-      export OPTIONS="$OPTIONS -DPYTHON_EXECUTABLE=$(which python2)";
-    fi
 
 install:
-  - git fetch --unshallow
+  - git fetch --unshallow --no-tags +refs/heads/master:refs/remotes/origin/master
 
 # Run the Build script
 script:
-  - cmake -DCMAKE_INSTALL_PREFIX=_install $OPTIONS $OPTIONS_BUILD
-  - build-wrapper-linux-x86-64 --out-dir bw-output make all
-  - make test
+  - cmake -DCMAKE_INSTALL_PREFIX=_install -DCMAKE_BUILD_TYPE=Debug -DOCIO_BUILD_TESTS=OFF -DOCIO_BUILD_GPU_TESTS=OFF -DOCIO_BUILD_DOCS=OFF .
+  - build-wrapper-linux-x86-64 --out-dir bw_output make clean all
   - sonar-scanner
-
 
 cache:
   directories:
     - '$HOME/.sonar/cache'
 
-deploy:
-  provider: pages
-  skip_cleanup: true
-  github_token: $GITHUB_TOKEN
-  on:
-    tags: true
-  local_dir: ./docs/build-html
-  fqdn: opencolorio.org
