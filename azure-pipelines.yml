@@ -1,0 +1,56 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright Contributors to the OpenColorIO Project.
+
+# azure-pipelines build file
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
+
+jobs:
+- job: Linux
+ pool:
+   vmImage: 'ubuntu-16.04'
+ strategy:
+   matrix:
+     clang:
+       cCompiler: clang
+       cxxCompiler: clang++
+     gcc:
+       cCompiler: gcc
+       cxxCompiler: g++
+ steps:
+ - checkout: self
+   clean: true
+   fetchDepth: 50
+ - task: CondaEnvironment@1
+   inputs:
+     packageSpecs: 'freeglut=3 glew=2 xorg-libxmu=1 xorg-libxi=1'
+     updateConda: true
+ - task: UsePythonVersion@0
+   inputs:
+     versionSpec: '2.7'
+     architecture: 'x64'
+ - task: CMake@1
+   inputs:
+     workingDirectory: '_build'
+     cmakeArgs: '.. -DCMAKE_C_COMPILER=$(cCompiler) -DCMAKE_CXX_COMPILER=$(cxxCompiler) -DCMAKE_INSTALL_PREFIX=../_install -DCMAKE_BUILD_TYPE=Release -DOCIO_BUILD_TESTS=ON -DOCIO_BUILD_GPU_TESTS=OFF -DOCIO_BUILD_DOCS=ON -DOCIO_WARNING_AS_ERROR=ON'
+ - task: CMake@1
+   inputs:
+     workingDirectory: '_build'
+     cmakeArgs: '--build . --target install'
+ - bash: 'ctest -V'
+   workingDirectory: '_build'
+   failOnStderr: 'true'
+
+#  - job: macOS
+#    pool:
+#      vmImage: 'macOS-10.14'
+#    steps:
+#    - script:
+
+#  - job: Windows
+#    pool:
+#      vmImage: 'vs2017-win2016'
+#    steps:
+#    - script:
+
+trigger:
+- ci_test
