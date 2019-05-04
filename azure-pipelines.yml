@@ -40,6 +40,10 @@ jobs:
       conda info
     displayName: Create conda environment
   - bash: |
+      mkdir _build
+      mkdir _install
+    displayName: Create working directories
+  - bash: |
       source activate ocio_env
       cmake .. \
         -DCMAKE_C_COMPILER=$(cCompiler) \
@@ -51,19 +55,16 @@ jobs:
         -DOCIO_BUILD_DOCS=ON \
         -DOCIO_WARNING_AS_ERROR=ON
     workingDirectory: _build
-    failOnStderr: true
     displayName: Configure OCIO
   - bash: |
       source activate ocio_env
       cmake --build . --target install
     workingDirectory: _build
-    failOnStderr: true
     displayName: Build OCIO
   - bash: |
       source activate ocio_env
       ctest -V
     workingDirectory: _build
-    failOnStderr: true
     displayName: Test OCIO
 
 #  - job: macOS
