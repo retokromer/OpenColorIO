@@ -8,18 +8,18 @@ jobs:
 - job: BuildAndTest
   strategy:
     matrix:
-      Linux-Clang:
-        image: 'ubuntu-16.04'
-        cCompiler: /usr/bin/clang
-        cxxCompiler: /usr/bin/clang++
+#      Linux-Clang:
+#        image: 'ubuntu-16.04'
+#        cCompiler: /usr/bin/clang
+#        cxxCompiler: /usr/bin/clang++
       Linux-GCC:
         image: 'ubuntu-16.04'
         cCompiler: /usr/bin/gcc
         cxxCompiler: /usr/bin/g++
-      MacOS-Clang:
-        image: 'macOS-10.14'
-        cCompiler: /usr/bin/clang
-        cxxCompiler: /usr/bin/clang++
+#      MacOS-Clang:
+#        image: 'macOS-10.14'
+#        cCompiler: /usr/bin/clang
+#        cxxCompiler: /usr/bin/clang++
 #      Windows-VC:
 #        image: 'vs2017-win2016'
 #        cCompiler:
@@ -34,12 +34,10 @@ jobs:
     clean: true
     fetchDepth: 50
     displayName: Checkout OCIO source
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '2.7'
-      architecture: 'x64'
-      addToPath: true
-    displayName: Add python to PATH
+  - bash: |
+      sudo apt-get update
+      sudo apt-get install python2.7-dev
+    displayName: Install Python
   - bash: echo "##vso[task.prependpath]$CONDA/bin"
     displayName: Add conda to PATH
   - bash: |
