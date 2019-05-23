@@ -5,17 +5,30 @@
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
 
 jobs:
-- job: Linux
-  pool:
-    vmImage: 'ubuntu-16.04'
+- job: BuildAndTest
   strategy:
     matrix:
-      clang:
-        cCompiler: clang
-        cxxCompiler: clang++
-      gcc:
-        cCompiler: gcc
-        cxxCompiler: g++
+      Linux-Clang:
+        image: 'ubuntu-16.04'
+        cCompiler: /usr/bin/clang
+        cxxCompiler: /usr/bin/clang++
+      Linux-GCC:
+        image: 'ubuntu-16.04'
+        cCompiler: /usr/bin/gcc
+        cxxCompiler: /usr/bin/g++
+      MacOS-Clang:
+        image: 'macOS-10.14'
+        cCompiler: /usr/bin/clang
+        cxxCompiler: /usr/bin/clang++
+      Windows-VC:
+        image: 'vs2017-win2016'
+        cCompiler:
+        cxxCompiler:
+  pool:
+    vmImage: $(image)
+  variables:
+    CC: $(cCompiler)
+    CXX: $(cxxCompiler)
   steps:
   - checkout: self
     clean: true
@@ -46,8 +59,6 @@ jobs:
   - bash: |
       source activate ocio_env
       cmake .. \
-        -DCMAKE_C_COMPILER=$(cCompiler) \
-        -DCMAKE_CXX_COMPILER=$(cxxCompiler) \
         -DCMAKE_INSTALL_PREFIX=../_install \
         -DCMAKE_BUILD_TYPE=Release \
         -DOCIO_BUILD_TESTS=ON \
@@ -66,18 +77,6 @@ jobs:
       ctest -V
     workingDirectory: _build
     displayName: Test OCIO
-
-#  - job: macOS
-#    pool:
-#      vmImage: 'macOS-10.14'
-#    steps:
-#    - script:
-
-#  - job: Windows
-#    pool:
-#      vmImage: 'vs2017-win2016'
-#    steps:
-#    - script:
 
 trigger:
 - ci_test
