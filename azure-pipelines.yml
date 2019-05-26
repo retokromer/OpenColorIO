@@ -5,57 +5,33 @@
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
 
 jobs:
-- job: BuildAndTest
+
+- job: Linux
   strategy:
     matrix:
-      Linux-Clang:
-        image: 'ubuntu-16.04'
-        cCompiler: /usr/bin/clang
-        cxxCompiler: /usr/bin/clang++
-      Linux-GCC:
-        image: 'ubuntu-16.04'
-        cCompiler: /usr/bin/gcc
-        cxxCompiler: /usr/bin/g++
-#      MacOS-Clang:
-#        image: 'macOS-10.14'
-#        cCompiler: /usr/bin/clang
-#        cxxCompiler: /usr/bin/clang++
-#      Windows-VC:
-#        image: 'vs2017-win2016'
-#        cCompiler:
-#        cxxCompiler:
+      Ubuntu 18.04 GCC 6:
+        agentImage: 'ubuntu-16.04'
+        dockerImage: 'michdolan/opencolorio:ubuntu18_gcc6'
+      # Clang:
+      #   agent: 'ubuntu-16.04'
+      #   docker:  
   pool:
-    vmImage: $(image)
-  variables:
-    CC: $(cCompiler)
-    CXX: $(cxxCompiler)
+    vmImage: $(agentImage)
+  container: $(dockerImage)
+
   steps:
+
   - checkout: self
     clean: true
     fetchDepth: 50
     displayName: Checkout OCIO source
-  - bash: |
-      sudo apt-get update
-      sudo apt-get install python2.7-dev
-    displayName: Install Python
-  - bash: echo "##vso[task.prependpath]$CONDA/bin"
-    displayName: Add conda to PATH
-  - bash: |
-      conda config \
-        --set always_yes True \
-        --set show_channel_urls True
-      conda config --add channels conda-forge
-      conda update conda
-      conda create -q -n ocio_env \
-        cmake freeglut glew xorg-libxmu xorg-libxi
-      conda info
-    displayName: Create conda environment
+
   - bash: |
       mkdir _build
       mkdir _install
     displayName: Create working directories
+
   - bash: |
-      source activate ocio_env
       cmake .. \
         -DCMAKE_INSTALL_PREFIX=../_install \
         -DCMAKE_BUILD_TYPE=Release \
@@ -66,16 +42,36 @@ jobs:
         -DCMAKE_CXX_FLAGS="-std=c++11 -fPIC"
     workingDirectory: _build
     displayName: Configure OCIO
+
   - bash: |
-      source activate ocio_env
       cmake --build . --target install
     workingDirectory: _build
     displayName: Build OCIO
+
   - bash: |
-      source activate ocio_env
       ctest -V
     workingDirectory: _build
     displayName: Test OCIO
+
+# - job: macOS
+#   strategy:
+#     matrix:
+#       clang:
+#         agentImage: 'macOS-10.14'
+#         cCompiler: /usr/bin/clang
+#         cxxCompiler: /usr/bin/clang++
+#   pool:
+#     vmImage: $(agentImage)
+
+# - job: Windows
+#   strategy:
+#     matrix:
+#       Windows-VC:
+#         agentImage: 'vs2017-win2016'
+#         cCompiler:
+#         cxxCompiler:
+#   pool:
+#     vmImage: $(agentImage)
 
 trigger:
 - ci_test
