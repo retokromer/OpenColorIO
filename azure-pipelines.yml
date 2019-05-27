@@ -38,6 +38,7 @@ jobs:
       brew install glew
       brew install pyenv
       brew upgrade cmake 
+      xcode-select --install
     displayName: Install dependencies
 
   - bash: |
@@ -53,6 +54,12 @@ jobs:
       export OPTIONS="$OPTIONS \
         -DPYTHON_EXECUTABLE=$(which python2)"
     displayName: Configure Python
+
+  - bash: |
+      echo PYTHON_CONFIGURE_OPTS
+      echo OPTIONS
+      python --version
+    displayName: Test persistent env
 
   - template: share/azure/build-steps.yml
     parameters:
