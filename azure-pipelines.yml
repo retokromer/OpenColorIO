@@ -21,44 +21,15 @@ jobs:
 
   steps:
 
-  - checkout: self
-    clean: true
-    fetchDepth: 50
-    displayName: Checkout OCIO source
-
-  - bash: |
-      mkdir _build
-      mkdir _install
-    displayName: Create working directories
-
-  - bash: |
-      cmake .. \
-        -DCMAKE_INSTALL_PREFIX=../_install \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DOCIO_BUILD_TESTS=ON \
-        -DOCIO_BUILD_GPU_TESTS=OFF \
-        -DOCIO_BUILD_DOCS=ON \
-        -DOCIO_WARNING_AS_ERROR=ON \
-        -DCMAKE_CXX_FLAGS="-std=c++14 -fPIC"
-    workingDirectory: _build
-    displayName: Configure OCIO
-
-  - bash: |
-      cmake --build . --target install
-    workingDirectory: _build
-    displayName: Build OCIO
-
-  - bash: |
-      ctest -V
-    workingDirectory: _build
-    displayName: Test OCIO
-
+  - template: share/azure/build-steps.yml
+    parameters:
+      cxxFlags: -std=c++14 -fPIC
 
 
 - job: macOS
   strategy:
     matrix:
-      clang:
+      10.14 Clang:
         agentImage: 'macOS-10.14'
   pool:
     vmImage: $(agentImage)
@@ -85,6 +56,9 @@ jobs:
         -DPYTHON_EXECUTABLE=$(which python2)"
     displayName: Configure Python
 
+  - template: share/azure/build-steps.yml
+    parameters:
+      cxxFlags: -std=c++14 -fPIC
 
 
 # - job: Windows
