@@ -34,37 +34,31 @@ jobs:
   steps:
 
   - bash: |
-      brew update
-      brew install glew
-      brew upgrade cmake 
       sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
-      xcode select -s /Library/Developer/CommandLineTools
+    condition: and(succeeded(), eq(variables['Agent.Name'], 'macOS-10.14'))
+    displayName: Install macOS SDK headers
+
+  - bash: |
+      brew update
+      brew upgrade cmake 
+      brew install glew
       brew install pyenv
     displayName: Install dependencies
 
   - bash: |
       echo 'eval "$(pyenv init -)"' >> .bash_profile
       source .bash_profile
-      export PYTHON_CONFIGURE_OPTS="--enable-framework"
-      pyenv install -v 2.7.16
+      env PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install -v 2.7.16
       pyenv global 2.7.16
-      export OPTIONS="$OPTIONS \
-        -DPYTHON_LIBRARY=$(python-config --prefix)/lib/libpython2.7.dylib"
-      export OPTIONS="$OPTIONS \
-        -DPYTHON_INCLUDE_DIR=$(python-config --prefix)/include/python2.7"
-      export OPTIONS="$OPTIONS \
-        -DPYTHON_EXECUTABLE=$(which python2)"
     displayName: Configure Python
-
-  - bash: |
-      echo PYTHON_CONFIGURE_OPTS
-      echo OPTIONS
-      python --version
-    displayName: Test persistent env
 
   - template: share/azure/build-steps.yml
     parameters:
       cxxFlags: -std=c++14 -fPIC -Wno-deprecated-register
+      cmakeOpts: |
+        -DPYTHON_LIBRARY=$(python-config --prefix)/lib/libpython2.7.dylib"
+        -DPYTHON_INCLUDE_DIR=$(python-config --prefix)/include/python2.7"
+        -DPYTHON_EXECUTABLE=$(which python2)"
 
 
 # - job: Windows
