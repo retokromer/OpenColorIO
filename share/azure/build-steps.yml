@@ -1,8 +1,8 @@
 parameters:
-  - buildTests: 'ON'
-  - buildGpuTests: 'OFF'
-  - buildDocs: 'ON'
-  - cxxFlags: ''
+  buildTests: 'ON'
+  buildGpuTests: 'OFF'
+  buildDocs: 'ON'
+  cxxFlags: ''
 
 steps:
 
