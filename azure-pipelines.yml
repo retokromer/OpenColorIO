@@ -39,7 +39,7 @@ jobs:
         -DOCIO_BUILD_GPU_TESTS=OFF \
         -DOCIO_BUILD_DOCS=ON \
         -DOCIO_WARNING_AS_ERROR=ON \
-        -DCMAKE_CXX_FLAGS="-std=c++11 -fPIC"
+        -DCMAKE_CXX_FLAGS="-std=c++14 -fPIC"
     workingDirectory: _build
     displayName: Configure OCIO
 
@@ -53,15 +53,39 @@ jobs:
     workingDirectory: _build
     displayName: Test OCIO
 
-# - job: macOS
-#   strategy:
-#     matrix:
-#       clang:
-#         agentImage: 'macOS-10.14'
-#         cCompiler: /usr/bin/clang
-#         cxxCompiler: /usr/bin/clang++
-#   pool:
-#     vmImage: $(agentImage)
+
+
+- job: macOS
+  strategy:
+    matrix:
+      clang:
+        agentImage: 'macOS-10.14'
+  pool:
+    vmImage: $(agentImage)
+  
+  steps:
+
+  - bash: |
+      brew update
+      brew install freeglut glew
+      brew upgrade cmake pyenv
+    displayName: Install dependencies
+
+  - bash: |
+      echo 'eval "$(pyenv init -)"' >> .bash_profile
+      source .bash_profile
+      export PYTHON_CONFIGURE_OPTS="--enable-framework"
+      pyenv install -v 2.7.16
+      pyenv global 2.7.16
+      export OPTIONS="$OPTIONS \
+        -DPYTHON_LIBRARY=$(python-config --prefix)/lib/libpython2.7.dylib"
+      export OPTIONS="$OPTIONS \
+        -DPYTHON_INCLUDE_DIR=$(python-config --prefix)/include/python2.7"
+      export OPTIONS="$OPTIONS \
+        -DPYTHON_EXECUTABLE=$(which python2)"
+    displayName: Configure Python
+
+
 
 # - job: Windows
 #   strategy:
