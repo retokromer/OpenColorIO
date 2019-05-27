@@ -36,11 +36,10 @@ jobs:
   - bash: |
       brew update
       brew install glew
-      brew install openssl readline sqlite3 xz zlib
-      installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
+      brew upgrade cmake 
+      sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
       xcode select -s /Library/Developer/CommandLineTools
       brew install pyenv
-      brew upgrade cmake 
     displayName: Install dependencies
 
   - bash: |
