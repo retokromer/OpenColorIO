@@ -3,6 +3,7 @@ parameters:
   buildGpuTests: 'OFF'
   buildDocs: 'ON'
   cxxFlags: ''
+  cmakeOpts: ''
 
 steps:
 
@@ -24,7 +25,8 @@ steps:
         -DOCIO_BUILD_GPU_TESTS=${{ parameters.buildGpuTests }} \
         -DOCIO_BUILD_DOCS=${{ parameters.buildDocs }} \
         -DOCIO_WARNING_AS_ERROR=ON \
-        -DCMAKE_CXX_FLAGS="${{ parameters.cxxFlags }}"
+        -DCMAKE_CXX_FLAGS="${{ parameters.cxxFlags }}" \
+        ${{ parameters.cmakeOpts }}
     workingDirectory: _build
     displayName: Configure OCIO
 
