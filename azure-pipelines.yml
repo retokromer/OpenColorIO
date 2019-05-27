@@ -35,7 +35,7 @@ jobs:
 
   - bash: |
       sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
-    condition: and(succeeded(), eq(parameters.vmImage, 'macOS-10.14'))
+    condition: and(succeeded(), eq(variables['agentImage'], 'macOS-10.14'))
     displayName: Install macOS SDK headers
 
   - bash: |
