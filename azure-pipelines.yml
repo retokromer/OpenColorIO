@@ -6,24 +6,21 @@
 
 jobs:
 
-- job: Linux
-  strategy:
-    matrix:
-      Ubuntu 18.04 GCC 6:
-        agentImage: 'ubuntu-16.04'
-        containerImage: michdolan/opencolorio:ubuntu18_gcc6
-      # Clang:
-      #   agentImage: 'ubuntu-16.04'
-      #   containerImage:  
-  pool:
-    vmImage: $(agentImage)
-  container: $[ variables['containerImage'] ]
+# - job: Linux
+#   strategy:
+#     matrix:
+#       Ubuntu 18.04 GCC 6:
+#         agentImage: 'ubuntu-16.04'
+#         containerImage: michdolan/opencolorio:ubuntu18_gcc6
+#   pool:
+#     vmImage: $(agentImage)
+#   container: $[ variables['containerImage'] ]
 
-  steps:
+#   steps:
 
-  - template: share/azure/build-steps.yml
-    parameters:
-      cxxFlags: -std=c++14 -fPIC
+#   - template: share/azure/build-steps.yml
+#     parameters:
+#       cxxFlags: -std=c++14 -fPIC
 
 
 - job: macOS
@@ -38,8 +35,9 @@ jobs:
 
   - bash: |
       brew update
-      brew install freeglut glew
-      brew upgrade cmake pyenv
+      brew install glew
+      brew upgrade cmake 
+      brew upgrade pyenv
     displayName: Install dependencies
 
   - bash: |
@@ -58,7 +56,7 @@ jobs:
 
   - template: share/azure/build-steps.yml
     parameters:
-      cxxFlags: -std=c++14 -fPIC
+      cxxFlags: -std=c++14 -fPIC -Wno-deprecated-register
 
 
 # - job: Windows
