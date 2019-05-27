@@ -26,7 +26,7 @@ jobs:
 - job: macOS
   strategy:
     matrix:
-      10.14 Clang:
+      10.14 AppleClang 10.0:
         agentImage: 'macOS-10.14'
   pool:
     vmImage: $(agentImage)
@@ -36,8 +36,8 @@ jobs:
   - bash: |
       brew update
       brew install glew
+      brew install pyenv
       brew upgrade cmake 
-      brew upgrade pyenv
     displayName: Install dependencies
 
   - bash: |
