@@ -74,8 +74,13 @@ jobs:
 
   steps:
 
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '2.7'
+      architecture: 'x64'
+
   - bash: |
-      /mnt/c/Python27-x64/python.exe -c "import sys; print(sys.executable)"
+      python -c "import sys; print(sys.executable)"
 
   # - template: share/azure/build-steps.yml
   #   parameters:
