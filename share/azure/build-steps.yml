@@ -5,6 +5,9 @@ parameters:
   buildGpuTests: 'OFF'
   buildDocs: 'ON'
   cxxFlags: ''
+  pyLib: ''
+  pyIncludeDir: ''
+  pyExe: ''
   cmakeOpts: ''
 
 steps:
@@ -29,6 +32,9 @@ steps:
         -DOCIO_BUILD_DOCS=${{ parameters.buildDocs }} \
         -DOCIO_WARNING_AS_ERROR=ON \
         -DCMAKE_CXX_FLAGS="${{ parameters.cxxFlags }}" \
+        -DPYTHON_LIBRARY=${{ parameters.pyLib }} \
+        -DPYTHON_INCLUDE_DIR=${{ parameters.pyIncludeDir }} \
+        -DPYTHON_EXECUTABLE=${{ parameters.pyExe }} \
         ${{ parameters.cmakeOpts }}
     workingDirectory: _build
     displayName: Configure OCIO
