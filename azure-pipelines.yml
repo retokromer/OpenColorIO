@@ -91,23 +91,18 @@ jobs:
   #     pyExe: $(which python2)
 
   - bash: |
-      ls /Users/vsts/hostedtoolcache/Python/2.7.16/x64/lib
-      echo "====="
-      ls /Users/vsts/hostedtoolcache/Python/2.7.16/x64/include
-      echo "====="
-      ls /Users/vsts/hostedtoolcache/Python/2.7.16/x64/bin
-      echo "====="
-      ls $(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")/lib
-      echo "====="
-      ls $(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")/include
-      echo "====="
-      ls $(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")/bin
+      ls $(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")/lib/
+      echo "======"
+      ls $(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")/lib/libpython2.7
+      echo "======"
+      cd $(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")
+      find -iname "*.dylib"
 
   - template: share/azure/build-steps.yml
     parameters:
       cxxFlags: -std=c++14 -fPIC -Wno-deprecated-register
       cmakeOpts: |
-        -DPYTHON_LIBRARY=$(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")/lib/libpython2.7.dylib \
+        -DPYTHON_LIBRARY=$(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")/lib/libpython2.7.a \
         -DPYTHON_INCLUDE_DIR=$(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")/include/python2.7 \
         -DPYTHON_EXECUTABLE=$(which python)
 
