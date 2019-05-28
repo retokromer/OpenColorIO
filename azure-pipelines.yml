@@ -63,7 +63,7 @@ jobs:
 - job: Windows
   strategy:
     matrix:
-      2016 MSVC 14 (shared):
+      2016 MSVC 14.16 (shared):
         agentImage: 'vs2017-win2016'
         buildShared: ON
       # 2016 MSVC 14 (static):
@@ -81,6 +81,7 @@ jobs:
       pyLib: C:\\Python27-x64\\libs\\python27.lib
       pyIncludeDir: C:\\Python27-x64\\include
       pyExe: C:\\Python27-x64\\python.exe
+      cmakeOpts: -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
 
 
 trigger:
