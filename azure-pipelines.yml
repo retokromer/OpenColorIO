@@ -94,8 +94,8 @@ jobs:
     parameters:
       cxxFlags: -std=c++14 -fPIC -Wno-deprecated-register
       cmakeOpts: |
-        -DPYTHON_LIBRARY=$(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")/include/python2.7 \
-        -DPYTHON_INCLUDE_DIR=$(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")/lib/libpython2.7.dylib \
+        -DPYTHON_LIBRARY=$(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")/lib/libpython2.7.dylib \
+        -DPYTHON_INCLUDE_DIR=$(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")/include/python2.7 \
         -DPYTHON_EXECUTABLE=$(which python)
 
 # ==============================================================================
@@ -141,6 +141,6 @@ jobs:
       verbose: ON
       cmakeOpts: |
         -DCMAKE_GENERATOR_PLATFORM=x64 \
-        -DPYTHON_LIBRARY=$(python -c "import sys,os;print(os.path.dirname(sys.executable))")/include \
-        -DPYTHON_INCLUDE_DIR=$(python -c "import sys,os;print(os.path.dirname(sys.executable))")/libs/python27.lib \
+        -DPYTHON_LIBRARY=$(python -c "import sys,os;print(os.path.dirname(sys.executable))")/libs/python27.lib \
+        -DPYTHON_INCLUDE_DIR=$(python -c "import sys,os;print(os.path.dirname(sys.executable))")/include \
         -DPYTHON_EXECUTABLE=$(which python)
