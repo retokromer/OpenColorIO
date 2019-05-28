@@ -74,14 +74,17 @@ jobs:
 
   steps:
 
-  - template: share/azure/build-steps.yml
-    parameters:
-      buildSharedLibs: $(buildShared)
-      cxxFlags: /std:c++14 /EHsc /D WIN32 /D NDEBUG
-      pyLib: C:\\Python27-x64\\libs\\python27.lib
-      pyIncludeDir: C:\\Python27-x64\\include
-      pyExe: C:\\Python27-x64\\python.exe
-      verbose: ON
+  - bash: |
+      python -c "import sys; print(sys.executable)"
+
+  # - template: share/azure/build-steps.yml
+  #   parameters:
+  #     buildSharedLibs: $(buildShared)
+  #     cxxFlags: /std:c++14 /EHsc /D WIN32 /D NDEBUG
+  #     pyLib: C:\\Python27-x64\\libs\\python27.lib
+  #     pyIncludeDir: C:\\Python27-x64\\include
+  #     pyExe: C:\\Python27-x64\\python.exe
+  #     verbose: ON
 
 
 trigger:
