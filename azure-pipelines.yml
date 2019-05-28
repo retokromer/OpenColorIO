@@ -66,9 +66,9 @@ jobs:
       2016 MSVC 14 (shared):
         agentImage: 'vs2017-win2016'
         buildShared: ON
-      2016 MSVC 14 (static):
-        agentImage: 'vs2017-win2016'
-        buildShared: OFF
+      # 2016 MSVC 14 (static):
+      #   agentImage: 'vs2017-win2016'
+      #   buildShared: OFF
   pool:
     vmImage: $(agentImage)
 
