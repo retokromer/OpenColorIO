@@ -1,4 +1,6 @@
 parameters:
+  buildType: 'Release'
+  buildShared: 'ON'
   buildTests: 'ON'
   buildGpuTests: 'OFF'
   buildDocs: 'ON'
@@ -20,7 +22,8 @@ steps:
   - bash: |
       cmake .. \
         -DCMAKE_INSTALL_PREFIX=../_install \
-        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_BUILD_TYPE=${{ parameters.buildType }} \
+        -DOCIO_BUILD_SHARED=${{ parameters.buildShared }} \
         -DOCIO_BUILD_TESTS=${{ parameters.buildTests }} \
         -DOCIO_BUILD_GPU_TESTS=${{ parameters.buildGpuTests }} \
         -DOCIO_BUILD_DOCS=${{ parameters.buildDocs }} \
