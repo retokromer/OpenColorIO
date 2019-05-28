@@ -93,6 +93,10 @@ jobs:
   - template: share/azure/build-steps.yml
     parameters:
       cxxFlags: -std=c++14 -fPIC -Wno-deprecated-register
+      cmakeOpts: |
+        -DPYTHON_LIBRARY=$(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")/include/python2.7 \
+        -DPYTHON_INCLUDE_DIR=$(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")/lib/libpython2.7.dylib \
+        -DPYTHON_EXECUTABLE=$(which python)
 
 # ==============================================================================
 # Windows
@@ -135,4 +139,8 @@ jobs:
       buildDocs: $(buildDocs)
       cxxFlags: /std:c++14 /EHsc /D WIN32 /D NDEBUG
       verbose: ON
-      cmakeOpts: -DCMAKE_GENERATOR_PLATFORM=x64
+      cmakeOpts: |
+        -DCMAKE_GENERATOR_PLATFORM=x64 \
+        -DPYTHON_LIBRARY=$(python -c "import sys,os;print(os.path.dirname(sys.executable))")/include \
+        -DPYTHON_INCLUDE_DIR=$(python -c "import sys,os;print(os.path.dirname(sys.executable))")/libs/python27.lib \
+        -DPYTHON_EXECUTABLE=$(which python)
