@@ -75,9 +75,6 @@ jobs:
   steps:
 
   - bash: |
-      ls C:/Python27-x64
-
-  - bash: |
       ls C:\\Python27-x64
 
   # - template: share/azure/build-steps.yml
