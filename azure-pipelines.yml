@@ -4,8 +4,26 @@
 # azure-pipelines build file
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
 
+trigger:
+  batch: true
+  branches:
+    include:
+    - ci_test
+    # - master
+    # - RB-*
+
+# pr:
+#   autoCancel: true
+#   branches:
+#     include:
+#     - master
+#     - RB-*
+
 jobs:
 
+# ==============================================================================
+# Linux
+# ==============================================================================
 - job: Linux
   strategy:
     matrix:
@@ -22,7 +40,9 @@ jobs:
     parameters:
       cxxFlags: -std=c++14 -fPIC
 
-
+# ==============================================================================
+# macOS
+# ==============================================================================
 - job: macOS
   strategy:
     matrix:
@@ -33,33 +53,50 @@ jobs:
   
   steps:
 
-  - bash: |
-      sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
-    condition: and(succeeded(), eq(variables['agentImage'], 'macOS-10.14'))
-    displayName: Install macOS SDK headers
+  # - bash: |
+  #     sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
+  #   condition: and(succeeded(), eq(variables['agentImage'], 'macOS-10.14'))
+  #   displayName: Install macOS SDK headers
+
+  # - bash: |
+  #     brew update
+  #     brew upgrade cmake 
+  #     brew install glew
+  #     brew install pyenv
+  #   displayName: Install dependencies
 
   - bash: |
       brew update
       brew upgrade cmake 
       brew install glew
-      brew install pyenv
     displayName: Install dependencies
 
-  - bash: |
-      echo 'eval "$(pyenv init -)"' >> .bash_profile
-      source .bash_profile
-      env PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install -v 2.7.16
-      pyenv global 2.7.16
+  # - bash: |
+  #     echo 'eval "$(pyenv init -)"' >> .bash_profile
+  #     source .bash_profile
+  #     env PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install -v 2.7.16
+  #     pyenv global 2.7.16
+  #   displayName: Configure Python
+
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '2.7'
     displayName: Configure Python
+
+  # - template: share/azure/build-steps.yml
+  #   parameters:
+  #     cxxFlags: -std=c++14 -fPIC -Wno-deprecated-register
+  #     pyLib: $(python-config --prefix)/lib/libpython2.7.dylib
+  #     pyIncludeDir: $(python-config --prefix)/include/python2.7
+  #     pyExe: $(which python2)
 
   - template: share/azure/build-steps.yml
     parameters:
       cxxFlags: -std=c++14 -fPIC -Wno-deprecated-register
-      pyLib: $(python-config --prefix)/lib/libpython2.7.dylib
-      pyIncludeDir: $(python-config --prefix)/include/python2.7
-      pyExe: $(which python2)
 
-
+# ==============================================================================
+# Windows
+# ==============================================================================
 - job: Windows
   strategy:
     matrix:
@@ -67,7 +104,7 @@ jobs:
         agentImage: 'vs2017-win2016'
         buildSharedLibs: ON
         buildDocs: ON
-      2016 MSVC 14 (static):
+      2016 MSVC 14.16 (static):
         agentImage: 'vs2017-win2016'
         buildSharedLibs: OFF
         buildDocs: OFF
@@ -79,20 +116,23 @@ jobs:
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '2.7'
-      architecture: 'x64'
     displayName: Configure Python
+
+  # - template: share/azure/build-steps.yml
+  #   parameters:
+  #     buildSharedLibs: $(buildSharedLibs)
+  #     buildDocs: $(buildDocs)
+  #     cxxFlags: /std:c++14 /EHsc /D WIN32 /D NDEBUG
+  #     pyLib: C:\\hostedtoolcache\\windows\\Python\\2.7.16\\x64\\libs\\python27.lib
+  #     pyIncludeDir: C:\\hostedtoolcache\\windows\\Python\\2.7.16\\x64\\include
+  #     pyExe: C:\\hostedtoolcache\\windows\\Python\\2.7.16\\x64\\python.exe
+  #     verbose: ON
+  #     cmakeOpts: -DCMAKE_GENERATOR_PLATFORM=x64
 
   - template: share/azure/build-steps.yml
     parameters:
       buildSharedLibs: $(buildSharedLibs)
       buildDocs: $(buildDocs)
       cxxFlags: /std:c++14 /EHsc /D WIN32 /D NDEBUG
-      pyLib: C:\\hostedtoolcache\\windows\\Python\\2.7.16\\x64\\libs\\python27.lib
-      pyIncludeDir: C:\\hostedtoolcache\\windows\\Python\\2.7.16\\x64\\include
-      pyExe: C:\\hostedtoolcache\\windows\\Python\\2.7.16\\x64\\python.exe
       verbose: ON
       cmakeOpts: -DCMAKE_GENERATOR_PLATFORM=x64
-
-
-trigger:
-- ci_test
