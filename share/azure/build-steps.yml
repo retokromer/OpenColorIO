@@ -26,7 +26,7 @@ steps:
       cmake .. \
         -DCMAKE_INSTALL_PREFIX=../_install \
         -DCMAKE_BUILD_TYPE=${{ parameters.buildType }} \
-        -DOCIO_BUILD_SHARED_LIBS=${{ parameters.buildShared }} \
+        -DBUILD_SHARED_LIBS=${{ parameters.buildSharedLibs }} \
         -DOCIO_BUILD_TESTS=${{ parameters.buildTests }} \
         -DOCIO_BUILD_GPU_TESTS=${{ parameters.buildGpuTests }} \
         -DOCIO_BUILD_DOCS=${{ parameters.buildDocs }} \
