@@ -1,3 +1,9 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright Contributors to the OpenColorIO Project.
+
+# azure-pipelines template file
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
+
 parameters:
   buildType: 'Release'
   buildSharedLibs: 'ON'
@@ -5,11 +11,11 @@ parameters:
   buildGpuTests: 'OFF'
   buildDocs: 'ON'
   cxxFlags: ''
-  pyLib: ''
-  pyIncludeDir: ''
-  pyExe: ''
   verbose: 'OFF'
   cmakeOpts: ''
+#   pyLib: ''
+#   pyIncludeDir: ''
+#   pyExe: ''
 
 steps:
 
@@ -23,20 +29,35 @@ steps:
       mkdir _install
     displayName: Create working directories
 
+#   - bash: |
+#       cmake .. \
+#         -DCMAKE_INSTALL_PREFIX=../_install \
+#         -DCMAKE_BUILD_TYPE=${{ parameters.buildType }} \
+#         -DCMAKE_CXX_FLAGS="${{ parameters.cxxFlags }}" \
+#         -DCMAKE_VERBOSE_MAKEFILE:BOOL=${{ parameters.verbose }} \
+#         -DBUILD_SHARED_LIBS=${{ parameters.buildSharedLibs }} \
+#         -DOCIO_BUILD_TESTS=${{ parameters.buildTests }} \
+#         -DOCIO_BUILD_GPU_TESTS=${{ parameters.buildGpuTests }} \
+#         -DOCIO_BUILD_DOCS=${{ parameters.buildDocs }} \
+#         -DOCIO_WARNING_AS_ERROR=ON \
+#         -DPYTHON_LIBRARY=${{ parameters.pyLib }} \
+#         -DPYTHON_INCLUDE_DIR=${{ parameters.pyIncludeDir }} \
+#         -DPYTHON_EXECUTABLE=${{ parameters.pyExe }} \
+#         ${{ parameters.cmakeOpts }}
+#     workingDirectory: _build
+#     displayName: Configure OCIO
+
   - bash: |
       cmake .. \
         -DCMAKE_INSTALL_PREFIX=../_install \
         -DCMAKE_BUILD_TYPE=${{ parameters.buildType }} \
+        -DCMAKE_CXX_FLAGS="${{ parameters.cxxFlags }}" \
+        -DCMAKE_VERBOSE_MAKEFILE:BOOL=${{ parameters.verbose }} \
         -DBUILD_SHARED_LIBS=${{ parameters.buildSharedLibs }} \
         -DOCIO_BUILD_TESTS=${{ parameters.buildTests }} \
         -DOCIO_BUILD_GPU_TESTS=${{ parameters.buildGpuTests }} \
         -DOCIO_BUILD_DOCS=${{ parameters.buildDocs }} \
         -DOCIO_WARNING_AS_ERROR=ON \
-        -DCMAKE_CXX_FLAGS="${{ parameters.cxxFlags }}" \
-        -DPYTHON_LIBRARY=${{ parameters.pyLib }} \
-        -DPYTHON_INCLUDE_DIR=${{ parameters.pyIncludeDir }} \
-        -DPYTHON_EXECUTABLE=${{ parameters.pyExe }} \
-        -DCMAKE_VERBOSE_MAKEFILE:BOOL=${{ parameters.verbose }} \
         ${{ parameters.cmakeOpts }}
     workingDirectory: _build
     displayName: Configure OCIO
