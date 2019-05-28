@@ -6,58 +6,58 @@
 
 jobs:
 
-# - job: Linux
-#   strategy:
-#     matrix:
-#       Ubuntu 18.04 GCC 6:
-#         agentImage: 'ubuntu-16.04'
-#         containerImage: michdolan/opencolorio:ubuntu18_gcc6
-#   pool:
-#     vmImage: $(agentImage)
-#   container: $[ variables['containerImage'] ]
+- job: Linux
+  strategy:
+    matrix:
+      Ubuntu 18.04 GCC 6:
+        agentImage: 'ubuntu-16.04'
+        containerImage: michdolan/opencolorio:ubuntu18_gcc6
+  pool:
+    vmImage: $(agentImage)
+  container: $[ variables['containerImage'] ]
 
-#   steps:
+  steps:
 
-#   - template: share/azure/build-steps.yml
-#     parameters:
-#       cxxFlags: -std=c++14 -fPIC
+  - template: share/azure/build-steps.yml
+    parameters:
+      cxxFlags: -std=c++14 -fPIC
 
 
-# - job: macOS
-#   strategy:
-#     matrix:
-#       10.14 AppleClang 10.0:
-#         agentImage: 'macOS-10.14'
-#   pool:
-#     vmImage: $(agentImage)
+- job: macOS
+  strategy:
+    matrix:
+      10.14 AppleClang 10.0:
+        agentImage: 'macOS-10.14'
+  pool:
+    vmImage: $(agentImage)
   
-#   steps:
+  steps:
 
-#   - bash: |
-#       sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
-#     condition: and(succeeded(), eq(variables['agentImage'], 'macOS-10.14'))
-#     displayName: Install macOS SDK headers
+  - bash: |
+      sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
+    condition: and(succeeded(), eq(variables['agentImage'], 'macOS-10.14'))
+    displayName: Install macOS SDK headers
 
-#   - bash: |
-#       brew update
-#       brew upgrade cmake 
-#       brew install glew
-#       brew install pyenv
-#     displayName: Install dependencies
+  - bash: |
+      brew update
+      brew upgrade cmake 
+      brew install glew
+      brew install pyenv
+    displayName: Install dependencies
 
-#   - bash: |
-#       echo 'eval "$(pyenv init -)"' >> .bash_profile
-#       source .bash_profile
-#       env PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install -v 2.7.16
-#       pyenv global 2.7.16
-#     displayName: Configure Python
+  - bash: |
+      echo 'eval "$(pyenv init -)"' >> .bash_profile
+      source .bash_profile
+      env PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install -v 2.7.16
+      pyenv global 2.7.16
+    displayName: Configure Python
 
-#   - template: share/azure/build-steps.yml
-#     parameters:
-#       cxxFlags: -std=c++14 -fPIC -Wno-deprecated-register
-#       pyLib: $(python-config --prefix)/lib/libpython2.7.dylib
-#       pyIncludeDir: $(python-config --prefix)/include/python2.7
-#       pyExe: $(which python2)
+  - template: share/azure/build-steps.yml
+    parameters:
+      cxxFlags: -std=c++14 -fPIC -Wno-deprecated-register
+      pyLib: $(python-config --prefix)/lib/libpython2.7.dylib
+      pyIncludeDir: $(python-config --prefix)/include/python2.7
+      pyExe: $(which python2)
 
 
 - job: Windows
@@ -65,10 +65,12 @@ jobs:
     matrix:
       2016 MSVC 14.16 (shared):
         agentImage: 'vs2017-win2016'
-        buildShared: ON
-      # 2016 MSVC 14 (static):
-      #   agentImage: 'vs2017-win2016'
-      #   buildShared: OFF
+        buildSharedLibs: ON
+        buildDocs: ON
+      2016 MSVC 14 (static):
+        agentImage: 'vs2017-win2016'
+        buildSharedLibs: OFF
+        buildDocs: OFF
   pool:
     vmImage: $(agentImage)
 
@@ -82,7 +84,8 @@ jobs:
 
   - template: share/azure/build-steps.yml
     parameters:
-      buildSharedLibs: $(buildShared)
+      buildSharedLibs: $(buildSharedLibs)
+      buildDocs: $(buildDocs)
       cxxFlags: /std:c++14 /EHsc /D WIN32 /D NDEBUG
       pyLib: C:\\hostedtoolcache\\windows\\Python\\2.7.16\\x64\\libs\\python27.lib
       pyIncludeDir: C:\\hostedtoolcache\\windows\\Python\\2.7.16\\x64\\include
