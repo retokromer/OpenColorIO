@@ -8,6 +8,7 @@ parameters:
   pyLib: ''
   pyIncludeDir: ''
   pyExe: ''
+  verbose: 'OFF'
   cmakeOpts: ''
 
 steps:
@@ -35,6 +36,7 @@ steps:
         -DPYTHON_LIBRARY=${{ parameters.pyLib }} \
         -DPYTHON_INCLUDE_DIR=${{ parameters.pyIncludeDir }} \
         -DPYTHON_EXECUTABLE=${{ parameters.pyExe }} \
+        -DCMAKE_VERBOSE_MAKEFILE:BOOL=${{ parameters.verbose }} \
         ${{ parameters.cmakeOpts }}
     workingDirectory: _build
     displayName: Configure OCIO
