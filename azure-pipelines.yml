@@ -75,7 +75,7 @@ jobs:
   steps:
 
   - bash: |
-      ls C:\\Python27-x64
+      /mnt/c/Python27-x64/python.exe -c "import sys; print(sys.executable)"
 
   # - template: share/azure/build-steps.yml
   #   parameters:
