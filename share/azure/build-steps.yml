@@ -40,7 +40,7 @@ steps:
     displayName: Configure OCIO
 
   - bash: |
-      cmake --build . --target install
+      cmake --build . --target install --config ${{ parameters.buildType }}
     workingDirectory: _build
     displayName: Build OCIO
 
