@@ -78,11 +78,12 @@ jobs:
     inputs:
       versionSpec: '2.7'
       architecture: 'x64'
+    displayName: Configure Python
 
   - template: share/azure/build-steps.yml
     parameters:
       buildSharedLibs: $(buildShared)
-      cxxFlags: /std:c++14 /EHsc
+      cxxFlags: /std:c++14 /EHsc /D WIN32 /D NDEBUG
       pyLib: C:\\hostedtoolcache\\windows\\Python\\2.7.16\\x64\\libs\\python27.lib
       pyIncludeDir: C:\\hostedtoolcache\\windows\\Python\\2.7.16\\x64\\include
       pyExe: C:\\hostedtoolcache\\windows\\Python\\2.7.16\\x64\\python.exe
