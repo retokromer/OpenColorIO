@@ -81,7 +81,6 @@ jobs:
       pyLib: C:\Python27-x64\libs\python27.lib
       pyIncludeDir: C:\Python27-x64\include
       pyExe: C:\Python27-x64\python.exe
-      cmakeOpts: -G "%CMAKE_PLATFORM%"
 
 
 trigger:
