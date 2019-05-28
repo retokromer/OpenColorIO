@@ -55,21 +55,34 @@ jobs:
   - template: share/azure/build-steps.yml
     parameters:
       cxxFlags: -std=c++14 -fPIC -Wno-deprecated-register
-      cmakeOpts: |
-        -DPYTHON_LIBRARY=$(python-config --prefix)/lib/libpython2.7.dylib \
-        -DPYTHON_INCLUDE_DIR=$(python-config --prefix)/include/python2.7 \
-        -DPYTHON_EXECUTABLE=$(which python2)
+      pyLib: $(python-config --prefix)/lib/libpython2.7.dylib
+      pyIncludeDir: $(python-config --prefix)/include/python2.7
+      pyExe: $(which python2)
 
 
-# - job: Windows
-#   strategy:
-#     matrix:
-#       Windows-VC:
-#         agentImage: 'vs2017-win2016'
-#         cCompiler:
-#         cxxCompiler:
-#   pool:
-#     vmImage: $(agentImage)
+- job: Windows
+  strategy:
+    matrix:
+      2016 MSVC 14 (shared):
+        agentImage: 'vs2017-win2016'
+        buildShared: ON
+      2016 MSVC 14 (static):
+        agentImage: 'vs2017-win2016'
+        buildShared: OFF
+  pool:
+    vmImage: $(agentImage)
+
+  steps:
+
+  - template: share/azure/build-steps.yml
+    parameters:
+      buildSharedLibs: $(buildShared)
+      cxxFlags: /std:c++14
+      pyLib: C:\Python27-x64\libs\python27.lib
+      pyIncludeDir: C:\Python27-x64\include
+      pyExe: C:\Python27-x64\python.exe
+      cmakeOpts: -G "%CMAKE_PLATFORM%"
+
 
 trigger:
 - ci_test
