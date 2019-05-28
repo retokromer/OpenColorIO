@@ -93,10 +93,10 @@ jobs:
   - bash: |
       ls $(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")/lib/
       echo "======"
-      ls $(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")/lib/libpython2.7
+      ls $(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")/lib/python2.7
       echo "======"
       cd $(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")
-      find -iname "*.dylib"
+      locate -i *.dylib
 
   - template: share/azure/build-steps.yml
     parameters:
