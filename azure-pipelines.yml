@@ -47,7 +47,7 @@ jobs:
 
   steps:
 
-    - template: $(buildTemplatePath)
+    - template: $[ variables['buildTemplatePath'] ]
       parameters:
         cxxFlags: $(nixCxxFlags)
         buildMode: $(buildMode)
@@ -87,7 +87,7 @@ jobs:
       pyenv global 2.7.16
     displayName: Configure Python
 
-  - template: $(buildTemplatePath)
+  - template: $[ variables['buildTemplatePath'] ]
     parameters:
       cxxFlags: $(nixCxxFlags) -Wno-deprecated-register
       cmakeOpts: |
@@ -120,7 +120,7 @@ jobs:
       versionSpec: '2.7'
     displayName: Configure Python
 
-  - template: $(buildTemplatePath)
+  - template: $[ variables['buildTemplatePath'] ]
     parameters:
       buildSharedLibs: $(buildSharedLibs)
       buildDocs: $(buildDocs)
