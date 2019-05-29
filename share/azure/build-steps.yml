@@ -42,22 +42,22 @@ steps:
     workingDirectory: _build
     displayName: Configure OCIO
 
-  - bash: |
-      cmake --build . --target install --config ${{ parameters.buildType }}
-    workingDirectory: _build
-    condition: and(succeeded(), ne(parameters.enableSonar, 'true'))
-    displayName: Build OCIO
+  - ${{ if ne(parameters.enableSonar, 'true') }}:
+    - bash: |
+        cmake --build . --target install --config ${{ parameters.buildType }}
+      workingDirectory: _build
+      displayName: Build OCIO
     
-  - bash: |
-      mkdir bw_output
-      build-wrapper-linux-x86-64 --out-dir bw_output make clean all
-      cd ..
-      sonar-scanner -X -Dsonar.login=$SONAR_TOKEN
-    workingDirectory: _build
-    env:
-      SONAR_TOKEN: $(tokens.sonarCloud)
-    condition: and(succeeded(), eq(parameters.enableSonar, 'true'))
-    displayName: Build OCIO with SonarCloud analysis
+  - ${{ if eq(parameters.enableSonar, 'true') }}:
+    - bash: |
+        mkdir bw_output
+        build-wrapper-linux-x86-64 --out-dir bw_output make clean all
+        cd ..
+        sonar-scanner -X -Dsonar.login=$SONAR_TOKEN
+      workingDirectory: _build
+      env:
+        SONAR_TOKEN: $(tokens.sonarCloud)
+      displayName: Build OCIO with SonarCloud analysis
 
   - bash: |
       ctest -V
