@@ -19,6 +19,12 @@ trigger:
 #     - master
 #     - RB-*
 
+# Common variables
+variables:
+  buildTemplatePath: share/azure/build-steps.yml
+  cxxStd: '14'
+  nixCxxFlags: -std=c++$(cxxStd) -fPIC
+
 jobs:
 
 # ==============================================================================
@@ -30,22 +36,21 @@ jobs:
       Ubuntu 18.04 GCC 6:
         agentImage: 'ubuntu-16.04'
         containerImage: michdolan/opencolorio:ubuntu18.04_gcc6
-        enableAnalysis: false
+        buildMode: default
       Ubuntu 18.04 GCC 6 (analysis):
         agentImage: 'ubuntu-16.04'
         containerImage: michdolan/opencolorio:ubuntu18.04_gcc6
-        enableAnalysis: true
+        buildMode: sonar
   pool:
     vmImage: $(agentImage)
   container: $[ variables['containerImage'] ]
 
   steps:
 
-    - template: share/azure/build-steps.yml
+    - template: $(buildTemplatePath)
       parameters:
-        cxxFlags: -std=c++14 -fPIC
-        ${{ if eq(variables['enableAnalysis'], 'true') }}:
-          enableSonar: true
+        cxxFlags: $(nixCxxFlags)
+        buildMode: $(buildMode)
 
 # ==============================================================================
 # macOS
@@ -82,9 +87,9 @@ jobs:
       pyenv global 2.7.16
     displayName: Configure Python
 
-  - template: share/azure/build-steps.yml
+  - template: $(buildTemplatePath)
     parameters:
-      cxxFlags: -std=c++14 -fPIC -Wno-deprecated-register
+      cxxFlags: $(nixCxxFlags) -Wno-deprecated-register
       cmakeOpts: |
         -DPYTHON_LIBRARY=$(python-config --prefix)/lib/libpython2.7.dylib \
         -DPYTHON_INCLUDE_DIR=$(python-config --prefix)/include/python2.7 \
@@ -115,11 +120,11 @@ jobs:
       versionSpec: '2.7'
     displayName: Configure Python
 
-  - template: share/azure/build-steps.yml
+  - template: $(buildTemplatePath)
     parameters:
       buildSharedLibs: $(buildSharedLibs)
       buildDocs: $(buildDocs)
-      cxxFlags: /std:c++14 /EHsc /D WIN32 /D NDEBUG
+      cxxFlags: /std:c++$(cxxStd) /EHsc /D WIN32 /D NDEBUG
       verbose: ON
       cmakeOpts: |
         -DCMAKE_GENERATOR_PLATFORM=x64 \
