@@ -35,17 +35,17 @@ jobs:
         agentImage: 'ubuntu-16.04'
         containerImage: michdolan/opencolorio:ubuntu18.04_gcc6
         enableAnalysis: true
-
   pool:
     vmImage: $(agentImage)
   container: $[ variables['containerImage'] ]
 
   steps:
 
-  - template: share/azure/build-steps.yml
-    parameters:
-      cxxFlags: -std=c++14 -fPIC
-      enableSonar: true
+    - template: share/azure/build-steps.yml
+      parameters:
+        cxxFlags: -std=c++14 -fPIC
+        ${{ if eq(variables['enableAnalysis'], 'true') }}:
+          enableSonar: true
 
 # ==============================================================================
 # macOS
@@ -93,7 +93,6 @@ jobs:
 # ==============================================================================
 # Windows
 # ==============================================================================
-# TODO: Replace with DockerHub container implementation
 - job: Windows
   strategy:
     matrix:
