@@ -110,9 +110,9 @@ jobs:
     displayName: Configure Python
 
   - bash: |
-      echo $(python -c "import sys,os;print(os.path.dirname(sys.executable))")/libs
+      ls $(python -c "import sys,os;print(os.path.dirname(sys.executable))")/libs
       echo "====="
-      echo python-config --prefix
+      python-config --prefix
 
   - template: share/azure/build-steps.yml
     parameters:
