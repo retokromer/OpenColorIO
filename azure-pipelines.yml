@@ -45,7 +45,7 @@ jobs:
   - template: share/azure/build-steps.yml
     parameters:
       cxxFlags: -std=c++14 -fPIC
-      enableSonar: $[ variables['enableAnalysis'] ]
+      enableSonar: true
 
 # ==============================================================================
 # macOS
