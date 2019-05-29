@@ -29,8 +29,12 @@ jobs:
     matrix:
       Ubuntu 18.04 GCC 6:
         agentImage: 'ubuntu-16.04'
-        containerImage: michdolan/opencolorio:ubuntu18_gcc6
+        containerImage: michdolan/opencolorio:ubuntu18.04_gcc6
         enableAnalysis: 'false'
+      Ubuntu 18.04 GCC 6 (analysis):
+        agentImage: 'ubuntu-16.04'
+        containerImage: michdolan/opencolorio:ubuntu18.04_gcc6
+        enableAnalysis: 'true'
 
   pool:
     vmImage: $(agentImage)
