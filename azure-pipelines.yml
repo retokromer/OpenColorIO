@@ -24,21 +24,21 @@ jobs:
 # ==============================================================================
 # Linux
 # ==============================================================================
-# - job: Linux
-#   strategy:
-#     matrix:
-#       Ubuntu 18.04 GCC 6:
-#         agentImage: 'ubuntu-16.04'
-#         containerImage: michdolan/opencolorio:ubuntu18_gcc6
-#   pool:
-#     vmImage: $(agentImage)
-#   container: $[ variables['containerImage'] ]
+- job: Linux
+  strategy:
+    matrix:
+      Ubuntu 18.04 GCC 6:
+        agentImage: 'ubuntu-16.04'
+        containerImage: michdolan/opencolorio:ubuntu18_gcc6
+  pool:
+    vmImage: $(agentImage)
+  container: $[ variables['containerImage'] ]
 
-#   steps:
+  steps:
 
-#   - template: share/azure/build-steps.yml
-#     parameters:
-#       cxxFlags: -std=c++14 -fPIC
+  - template: share/azure/build-steps.yml
+    parameters:
+      cxxFlags: -std=c++14 -fPIC
 
 # ==============================================================================
 # macOS
@@ -53,50 +53,17 @@ jobs:
   
   steps:
 
-  # - bash: |
-  #     sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
-  #   condition: and(succeeded(), eq(variables['agentImage'], 'macOS-10.14'))
-  #   displayName: Install macOS SDK headers
-
-  # - bash: |
-  #     brew update
-  #     brew upgrade cmake 
-  #     brew install glew
-  #     brew install pyenv
-  #   displayName: Install dependencies
-
   - bash: |
       brew update
       brew upgrade cmake 
       brew install glew
     displayName: Install dependencies
 
-  # - bash: |
-  #     echo 'eval "$(pyenv init -)"' >> .bash_profile
-  #     source .bash_profile
-  #     env PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install -v 2.7.16
-  #     pyenv global 2.7.16
-  #   displayName: Configure Python
-
+  # Note: This task provides only a static (*.a) version of the Python lib
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '2.7'
     displayName: Configure Python
-
-  # - template: share/azure/build-steps.yml
-  #   parameters:
-  #     cxxFlags: -std=c++14 -fPIC -Wno-deprecated-register
-  #     pyLib: $(python-config --prefix)/lib/libpython2.7.dylib
-  #     pyIncludeDir: $(python-config --prefix)/include/python2.7
-  #     pyExe: $(which python2)
-
-  - bash: |
-      ls $(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")/lib/
-      echo "======"
-      ls $(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")/lib/python2.7
-      echo "======"
-      cd $(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")
-      locate -i *.dylib
 
   - template: share/azure/build-steps.yml
     parameters:
@@ -109,35 +76,37 @@ jobs:
 # ==============================================================================
 # Windows
 # ==============================================================================
-# - job: Windows
-#   strategy:
-#     matrix:
-#       2016 MSVC 14.16 (shared):
-#         agentImage: 'vs2017-win2016'
-#         buildSharedLibs: ON
-#         buildDocs: ON
-#       2016 MSVC 14.16 (static):
-#         agentImage: 'vs2017-win2016'
-#         buildSharedLibs: OFF
-#         buildDocs: OFF
-#   pool:
-#     vmImage: $(agentImage)
+# TODO: Replace with DockerHub container implementation
+- job: Windows
+  strategy:
+    matrix:
+      2016 MSVC 14.16 (shared):
+        agentImage: 'vs2017-win2016'
+        buildSharedLibs: ON
+        buildDocs: ON
+      2016 MSVC 14.16 (static):
+        agentImage: 'vs2017-win2016'
+        buildSharedLibs: OFF
+        buildDocs: OFF
+  pool:
+    vmImage: $(agentImage)
 
-#   steps:
+  steps:
 
-#   - task: UsePythonVersion@0
-#     inputs:
-#       versionSpec: '2.7'
-#     displayName: Configure Python
+  # Note: This task provides only a static (*.lib) version of the Python lib
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '2.7'
+    displayName: Configure Python
 
-#   - template: share/azure/build-steps.yml
-#     parameters:
-#       buildSharedLibs: $(buildSharedLibs)
-#       buildDocs: $(buildDocs)
-#       cxxFlags: /std:c++14 /EHsc /D WIN32 /D NDEBUG
-#       verbose: ON
-#       cmakeOpts: |
-#         -DCMAKE_GENERATOR_PLATFORM=x64 \
-#         -DPYTHON_LIBRARY=$(python -c "import sys,os;print(os.path.dirname(sys.executable))")/libs/python27.lib \
-#         -DPYTHON_INCLUDE_DIR=$(python -c "import sys,os;print(os.path.dirname(sys.executable))")/include \
-#         -DPYTHON_EXECUTABLE=$(which python)
+  - template: share/azure/build-steps.yml
+    parameters:
+      buildSharedLibs: $(buildSharedLibs)
+      buildDocs: $(buildDocs)
+      cxxFlags: /std:c++14 /EHsc /D WIN32 /D NDEBUG
+      verbose: ON
+      cmakeOpts: |
+        -DCMAKE_GENERATOR_PLATFORM=x64 \
+        -DPYTHON_LIBRARY=$(python -c "import sys,os;print(os.path.dirname(sys.executable))")/libs/python27.lib \
+        -DPYTHON_INCLUDE_DIR=$(python -c "import sys,os;print(os.path.dirname(sys.executable))")/include \
+        -DPYTHON_EXECUTABLE=$(which python)
