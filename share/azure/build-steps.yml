@@ -5,15 +5,15 @@
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
 
 parameters:
-  buildType: 'Release'
-  buildSharedLibs: 'ON'
-  buildTests: 'ON'
-  buildGpuTests: 'OFF'
-  buildDocs: 'ON'
+  buildType: Release
+  buildSharedLibs: ON
+  buildTests: ON
+  buildGpuTests: OFF
+  buildDocs: ON
   cxxFlags: ''
-  verbose: 'OFF'
+  verbose: OFF
   cmakeOpts: ''
-  enableSonar: 'false'
+  enableSonar: false
 
 steps:
 
@@ -42,13 +42,13 @@ steps:
     workingDirectory: _build
     displayName: Configure OCIO
 
-  - ${{ if ne(parameters.enableSonar, 'true') }}:
+  - ${{ if ne(format('{0}', parameters.enableSonar), 'true') }}:
     - bash: |
         cmake --build . --target install --config ${{ parameters.buildType }}
       workingDirectory: _build
       displayName: Build OCIO
     
-  - ${{ if eq(parameters.enableSonar, 'true') }}:
+  - ${{ if eq(format('{0}', parameters.enableSonar), 'true') }}:
     - bash: |
         mkdir bw_output
         build-wrapper-linux-x86-64 --out-dir bw_output make clean all
