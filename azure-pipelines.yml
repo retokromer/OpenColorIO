@@ -21,7 +21,6 @@ trigger:
 
 # Common variables
 variables:
-  buildTemplatePath: share/azure/build-steps.yml
   cxxStd: '14'
   nixCxxFlags: -std=c++$(cxxStd) -fPIC
 
@@ -47,7 +46,7 @@ jobs:
 
   steps:
 
-    - template: $[ variables['buildTemplatePath'] ]
+    - template: share/azure/build-steps.yml
       parameters:
         cxxFlags: $(nixCxxFlags)
         buildMode: $(buildMode)
@@ -87,7 +86,7 @@ jobs:
       pyenv global 2.7.16
     displayName: Configure Python
 
-  - template: $[ variables['buildTemplatePath'] ]
+  - template: share/azure/build-steps.yml
     parameters:
       cxxFlags: $(nixCxxFlags) -Wno-deprecated-register
       cmakeOpts: |
@@ -120,7 +119,7 @@ jobs:
       versionSpec: '2.7'
     displayName: Configure Python
 
-  - template: $[ variables['buildTemplatePath'] ]
+  - template: share/azure/build-steps.yml
     parameters:
       buildSharedLibs: $(buildSharedLibs)
       buildDocs: $(buildDocs)
