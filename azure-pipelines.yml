@@ -109,11 +109,6 @@ jobs:
       versionSpec: '2.7'
     displayName: Configure Python
 
-  - bash: |
-      ls $(python -c "import sys,os;print(os.path.dirname(sys.executable))")/libs
-      echo "====="
-      python-config --prefix
-
   - template: share/azure/build-steps.yml
     parameters:
       buildSharedLibs: $(buildSharedLibs)
