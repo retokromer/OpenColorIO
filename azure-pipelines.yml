@@ -53,25 +53,35 @@ jobs:
   
   steps:
 
+  # See the "Command Line Tools/New Features" section of this page for an 
+  # explanation of why this workaround is necessary:
+  # https://developer.apple.com/documentation/xcode_release_notes/xcode_10_release_notes
+  - bash: |
+      sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
+    condition: and(succeeded(), eq(variables['agentImage'], 'macOS-10.14'))
+    displayName: Install macOS SDK headers
+
   - bash: |
       brew update
       brew upgrade cmake 
       brew install glew
+      brew install pyenv
     displayName: Install dependencies
 
-  # Note: This task provides only a static (*.a) version of the Python lib
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '2.7'
+  - bash: |
+      echo 'eval "$(pyenv init -)"' >> .bash_profile
+      source .bash_profile
+      env PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install -v 2.7.16
+      pyenv global 2.7.16
     displayName: Configure Python
 
   - template: share/azure/build-steps.yml
     parameters:
       cxxFlags: -std=c++14 -fPIC -Wno-deprecated-register
       cmakeOpts: |
-        -DPYTHON_LIBRARY=$(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")/lib/libpython2.7.a \
-        -DPYTHON_INCLUDE_DIR=$(python -c "import sys,os;print(os.path.dirname(os.path.dirname(sys.executable)))")/include/python2.7 \
-        -DPYTHON_EXECUTABLE=$(which python)
+        -DPYTHON_LIBRARY=$(python-config --prefix)/lib/libpython2.7.dylib \
+        -DPYTHON_INCLUDE_DIR=$(python-config --prefix)/include/python2.7 \
+        -DPYTHON_EXECUTABLE=$(which python2)
 
 # ==============================================================================
 # Windows
@@ -98,6 +108,11 @@ jobs:
     inputs:
       versionSpec: '2.7'
     displayName: Configure Python
+
+  - bash: |
+      echo $(python -c "import sys,os;print(os.path.dirname(sys.executable))")/libs
+      echo "====="
+      echo python-config --prefix
 
   - template: share/azure/build-steps.yml
     parameters:
