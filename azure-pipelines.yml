@@ -30,6 +30,8 @@ jobs:
       Ubuntu 18.04 GCC 6:
         agentImage: 'ubuntu-16.04'
         containerImage: michdolan/opencolorio:ubuntu18_gcc6
+        enableAnalysis: 'false'
+
   pool:
     vmImage: $(agentImage)
   container: $[ variables['containerImage'] ]
@@ -39,6 +41,7 @@ jobs:
   - template: share/azure/build-steps.yml
     parameters:
       cxxFlags: -std=c++14 -fPIC
+      enableSonar: $(enableAnalysis)
 
 # ==============================================================================
 # macOS
