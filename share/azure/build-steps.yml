@@ -5,6 +5,7 @@
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
 
 parameters:
+  buildMode: default
   buildType: Release
   buildSharedLibs: ON
   buildTests: ON
@@ -13,7 +14,6 @@ parameters:
   cxxFlags: ''
   verbose: OFF
   cmakeOpts: ''
-  enableSonar: false
 
 steps:
 
@@ -42,13 +42,13 @@ steps:
     workingDirectory: _build
     displayName: Configure OCIO
 
-  - ${{ if ne(parameters['enableSonar'], 'true') }}:
+  - ${{ if eq(parameters['buildMode'], 'default') }}:
     - bash: |
         cmake --build . --target install --config ${{ parameters.buildType }}
       workingDirectory: _build
       displayName: Build OCIO
     
-  - ${{ if eq(parameters['enableSonar'], 'true') }}:
+  - ${{ if eq(parameters['buildMode'], 'sonar') }}:
     - bash: |
         mkdir bw_output
         build-wrapper-linux-x86-64 --out-dir bw_output make clean all
