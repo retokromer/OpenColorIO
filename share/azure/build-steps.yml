@@ -51,7 +51,8 @@ steps:
   - bash: |
       mkdir bw_output
       build-wrapper-linux-x86-64 --out-dir bw_output make clean all
-      sonar-scanner -Dsonar.login=$SONAR_TOKEN
+      cd ..
+      sonar-scanner -X -Dsonar.login=$SONAR_TOKEN
     workingDirectory: _build
     env:
       SONAR_TOKEN: $(tokens.sonarCloud)
