@@ -46,18 +46,10 @@ jobs:
 
   steps:
 
-    # Note: Template 'buildMode' parameter can't contain an expression
-    - ${{ if eq(variables['buildMode'], 'default') }}:
-      - template: share/azure/build-steps.yml
-        parameters:
-          cxxFlags: $(nixCxxFlags)
-          buildMode: default
-
-    - ${{ if eq(variables['buildMode'], 'sonar') }}:
-      - template: share/azure/build-steps.yml
-        parameters:
-          cxxFlags: $(nixCxxFlags)
-          buildMode: sonar
+  - template: share/azure/build-steps.yml
+    parameters:
+      cxxFlags: $(nixCxxFlags)
+      buildMode: $(buildMode)
 
 # ==============================================================================
 # macOS
@@ -121,7 +113,7 @@ jobs:
 
   steps:
 
-  # Note: This task provides only a static (*.lib) version of the Python lib
+  # Note: This task provides only a static Python lib
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '2.7'
