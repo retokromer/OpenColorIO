@@ -42,27 +42,24 @@ steps:
   workingDirectory: _build
   displayName: Configure OCIO
 
-# Default build
-- bash: |
-    cmake --build . --target install --config ${{ parameters.buildType }}
-  condition: and(succeeded(), eq(parameters['buildMode'], 'default'))
-  workingDirectory: _build
-  displayName: Build OCIO
+- ${{ if eq(parameters['buildMode'], 'default') }}:
+  - bash: |
+      cmake --build . --target install --config ${{ parameters.buildType }}
+    workingDirectory: _build
+    displayName: Build OCIO
 
-# SonarCloud build
-- bash: |
-    mkdir bw_output
-    build-wrapper-linux-x86-64 --out-dir bw_output make clean all
-  condition: and(succeeded(), eq(parameters['buildMode'], 'sonar'))
-  workingDirectory: _build
-  displayName: Build OCIO with build-wrapper
+- ${{ if eq(parameters['buildMode'], 'sonar') }}:
+  - bash: |
+      mkdir bw_output
+      build-wrapper-linux-x86-64 --out-dir bw_output make clean all
+    workingDirectory: _build
+    displayName: Build OCIO with build-wrapper
 
-- bash: |
-    sonar-scanner -X -Dsonar.login=$SONAR_TOKEN
-  env:
-    SONAR_TOKEN: $(tokens.sonarCloud)
-  condition: and(succeeded(), eq(parameters['buildMode'], 'sonar'))
-  displayName: Run sonar-scanner
+  - bash: |
+      sonar-scanner -X -Dsonar.login=$SONAR_TOKEN
+    env:
+      SONAR_TOKEN: $(tokens.sonarCloud)
+    displayName: Run sonar-scanner
 
 - bash: |
     ctest -V
