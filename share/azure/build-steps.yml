@@ -17,51 +17,54 @@ parameters:
 
 steps:
 
-  - checkout: self
-    clean: true
-    fetchDepth: 50
-    displayName: Checkout OCIO source
+- checkout: self
+  clean: true
+  fetchDepth: 50
+  displayName: Checkout OCIO source
 
-  - bash: |
-      mkdir _build
-      mkdir _install
-    displayName: Create working directories
+- bash: |
+    mkdir _build
+    mkdir _install
+  displayName: Create working directories
 
-  - bash: |
-      cmake .. \
-        -DCMAKE_INSTALL_PREFIX=../_install \
-        -DCMAKE_BUILD_TYPE=${{ parameters.buildType }} \
-        -DCMAKE_CXX_FLAGS="${{ parameters.cxxFlags }}" \
-        -DCMAKE_VERBOSE_MAKEFILE:BOOL=${{ parameters.verbose }} \
-        -DBUILD_SHARED_LIBS=${{ parameters.buildSharedLibs }} \
-        -DOCIO_BUILD_TESTS=${{ parameters.buildTests }} \
-        -DOCIO_BUILD_GPU_TESTS=${{ parameters.buildGpuTests }} \
-        -DOCIO_BUILD_DOCS=${{ parameters.buildDocs }} \
-        -DOCIO_WARNING_AS_ERROR=ON \
-        ${{ parameters.cmakeOpts }}
-    workingDirectory: _build
-    displayName: Configure OCIO
+- bash: |
+    cmake .. \
+      -DCMAKE_INSTALL_PREFIX=../_install \
+      -DCMAKE_BUILD_TYPE=${{ parameters.buildType }} \
+      -DCMAKE_CXX_FLAGS="${{ parameters.cxxFlags }}" \
+      -DCMAKE_VERBOSE_MAKEFILE:BOOL=${{ parameters.verbose }} \
+      -DBUILD_SHARED_LIBS=${{ parameters.buildSharedLibs }} \
+      -DOCIO_BUILD_TESTS=${{ parameters.buildTests }} \
+      -DOCIO_BUILD_GPU_TESTS=${{ parameters.buildGpuTests }} \
+      -DOCIO_BUILD_DOCS=${{ parameters.buildDocs }} \
+      -DOCIO_WARNING_AS_ERROR=ON \
+      ${{ parameters.cmakeOpts }}
+  workingDirectory: _build
+  displayName: Configure OCIO
 
-  - ${{ if eq(parameters['buildMode'], 'default') }}:
-    - bash: |
-        cmake --build . --target install --config ${{ parameters.buildType }}
-      workingDirectory: _build
-      displayName: Build OCIO
-    
-  - ${{ if eq(parameters['buildMode'], 'sonar') }}:
-    - bash: |
-        mkdir bw_output
-        build-wrapper-linux-x86-64 --out-dir bw_output make clean all
-      workingDirectory: _build
-      displayName: Build OCIO with build-wrapper
+# Default build
+- bash: |
+    cmake --build . --target install --config ${{ parameters.buildType }}
+  condition: and(succeeded(), eq(parameters['buildMode'], 'default'))
+  workingDirectory: _build
+  displayName: Build OCIO
 
-    - bash: |
-        sonar-scanner -X -Dsonar.login=$SONAR_TOKEN
-      env:
-        SONAR_TOKEN: $(tokens.sonarCloud)
-      displayName: Run sonar-scanner
+# SonarCloud build
+- bash: |
+    mkdir bw_output
+    build-wrapper-linux-x86-64 --out-dir bw_output make clean all
+  condition: and(succeeded(), eq(parameters['buildMode'], 'sonar'))
+  workingDirectory: _build
+  displayName: Build OCIO with build-wrapper
 
-  - bash: |
-      ctest -V
-    workingDirectory: _build
-    displayName: Test OCIO
+- bash: |
+    sonar-scanner -X -Dsonar.login=$SONAR_TOKEN
+  env:
+    SONAR_TOKEN: $(tokens.sonarCloud)
+  condition: and(succeeded(), eq(parameters['buildMode'], 'sonar'))
+  displayName: Run sonar-scanner
+
+- bash: |
+    ctest -V
+  workingDirectory: _build
+  displayName: Test OCIO
