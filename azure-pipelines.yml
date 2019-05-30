@@ -4,20 +4,22 @@
 # azure-pipelines build file
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
 
+# TODO: Add gh-pages deployment on tag trigger
+
 trigger:
   batch: true
   branches:
     include:
+    - master
+    - RB-*
     - ci_test
-    # - master
-    # - RB-*
 
-# pr:
-#   autoCancel: true
-#   branches:
-#     include:
-#     - master
-#     - RB-*
+pr:
+  autoCancel: true
+  branches:
+    include:
+    - master
+    - RB-*
 
 # Common variables
 variables:
@@ -29,12 +31,16 @@ jobs:
 # ------------------------------------------------------------------------------
 # Linux
 # ------------------------------------------------------------------------------
+# TODO: Move Docker images to ASWF DockerHub account
 - job: Linux
   strategy:
     matrix:
       Ubuntu 18.04 GCC 6:
         agentImage: 'ubuntu-16.04'
         containerImage: michdolan/opencolorio:ubuntu18.04_gcc6
+      Ubuntu 18.04 Clang 6:
+        agentImage: 'ubuntu-16.04'
+        containerImage: michdolan/opencolorio:ubuntu18.04_clang6
   pool:
     vmImage: $(agentImage)
   container: $[ variables['containerImage'] ]
@@ -49,14 +55,11 @@ jobs:
 # SonarCloud static anlaysis
 # --------------------------
 - job: SonarCloud
-  strategy:
-    matrix:
-      Ubuntu 18.04 GCC 6:
-        agentImage: 'ubuntu-16.04'
-        containerImage: michdolan/opencolorio:ubuntu18.04_gcc6
+  displayName: SonarCloud Ubuntu 18.04 GCC 6
+  condition: in(variables['Build.Reason'], 'Manual', 'Schedule')
   pool:
-    vmImage: $(agentImage)
-  container: $[ variables['containerImage'] ]
+    vmImage: 'ubuntu-16.04'
+  container: michdolan/opencolorio:ubuntu18.04_gcc6
 
   steps:
 
@@ -79,7 +82,7 @@ jobs:
   steps:
 
   # See the "Command Line Tools/New Features" section of this page for an 
-  # explanation of why this workaround is necessary:
+  # explanation of why this workaround is necessary (for building Python):
   # https://developer.apple.com/documentation/xcode_release_notes/xcode_10_release_notes
   - bash: |
       sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
@@ -100,13 +103,17 @@ jobs:
       pyenv global 2.7.16
     displayName: Configure Python
 
+  # - template: share/azure/build-steps.yml
+  #   parameters:
+  #     cxxFlags: $(nixCxxFlags) -Wno-deprecated-register
+  #     cmakeOpts: |
+  #       -DPYTHON_LIBRARY=$(python-config --prefix)/lib/libpython2.7.dylib \
+  #       -DPYTHON_INCLUDE_DIR=$(python-config --prefix)/include/python2.7 \
+  #       -DPYTHON_EXECUTABLE=$(which python2)
+
   - template: share/azure/build-steps.yml
     parameters:
       cxxFlags: $(nixCxxFlags) -Wno-deprecated-register
-      cmakeOpts: |
-        -DPYTHON_LIBRARY=$(python-config --prefix)/lib/libpython2.7.dylib \
-        -DPYTHON_INCLUDE_DIR=$(python-config --prefix)/include/python2.7 \
-        -DPYTHON_EXECUTABLE=$(which python2)
 
 # ------------------------------------------------------------------------------
 # Windows
@@ -133,6 +140,18 @@ jobs:
       versionSpec: '2.7'
     displayName: Configure Python
 
+  # - template: share/azure/build-steps.yml
+  #   parameters:
+  #     buildSharedLibs: $(buildSharedLibs)
+  #     buildDocs: $(buildDocs)
+  #     cxxFlags: /std:c++$(cxxStd) /EHsc /D WIN32 /D NDEBUG
+  #     verbose: ON
+  #     cmakeOpts: |
+  #       -DCMAKE_GENERATOR_PLATFORM=x64 \
+  #       -DPYTHON_LIBRARY=$(python -c "import sys,os;print(os.path.dirname(sys.executable))")/libs/python27.lib \
+  #       -DPYTHON_INCLUDE_DIR=$(python -c "import sys,os;print(os.path.dirname(sys.executable))")/include \
+  #       -DPYTHON_EXECUTABLE=$(which python)
+
   - template: share/azure/build-steps.yml
     parameters:
       buildSharedLibs: $(buildSharedLibs)
@@ -141,6 +160,4 @@ jobs:
       verbose: ON
       cmakeOpts: |
         -DCMAKE_GENERATOR_PLATFORM=x64 \
-        -DPYTHON_LIBRARY=$(python -c "import sys,os;print(os.path.dirname(sys.executable))")/libs/python27.lib \
-        -DPYTHON_INCLUDE_DIR=$(python -c "import sys,os;print(os.path.dirname(sys.executable))")/include \
         -DPYTHON_EXECUTABLE=$(which python)
