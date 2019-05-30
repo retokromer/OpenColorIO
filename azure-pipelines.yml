@@ -109,9 +109,9 @@ jobs:
     parameters:
       cxxFlags: $(nixCxxFlags) -Wno-deprecated-register
       cmakeOpts: |
-        -DPYTHON_EXECUTABLE=$(which python2)
-        -DPYTHON_LIBRARY=$(python-config --prefix)/lib/libpython2.7.dylib \
         -DPYTHON_INCLUDE_DIR=$(python-config --prefix)/include/python2.7 \
+        -DPYTHON_LIBRARY=$(python-config --prefix)/lib/libpython2.7.dylib \
+        -DPYTHON_EXECUTABLE=$(which python2)
 
 # ------------------------------------------------------------------------------
 # Windows
