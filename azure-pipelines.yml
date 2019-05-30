@@ -26,20 +26,15 @@ variables:
 
 jobs:
 
-# ==============================================================================
+# ------------------------------------------------------------------------------
 # Linux
-# ==============================================================================
+# ------------------------------------------------------------------------------
 - job: Linux
   strategy:
     matrix:
       Ubuntu 18.04 GCC 6:
         agentImage: 'ubuntu-16.04'
         containerImage: michdolan/opencolorio:ubuntu18.04_gcc6
-        buildMode: default
-      Ubuntu 18.04 GCC 6 (SonarCloud):
-        agentImage: 'ubuntu-16.04'
-        containerImage: michdolan/opencolorio:ubuntu18.04_gcc6
-        buildMode: sonar
   pool:
     vmImage: $(agentImage)
   container: $[ variables['containerImage'] ]
@@ -49,11 +44,30 @@ jobs:
   - template: share/azure/build-steps.yml
     parameters:
       cxxFlags: $(nixCxxFlags)
-      buildMode: $(buildMode)
 
-# ==============================================================================
+# --------------------------
+# SonarCloud static anlaysis
+# --------------------------
+- job: SonarCloud
+  strategy:
+    matrix:
+      Ubuntu 18.04 GCC 6:
+        agentImage: 'ubuntu-16.04'
+        containerImage: michdolan/opencolorio:ubuntu18.04_gcc6
+  pool:
+    vmImage: $(agentImage)
+  container: $[ variables['containerImage'] ]
+
+  steps:
+
+  - template: share/azure/build-steps.yml
+    parameters:
+      cxxFlags: $(nixCxxFlags)
+      buildMode: sonar
+
+# ------------------------------------------------------------------------------
 # macOS
-# ==============================================================================
+# ------------------------------------------------------------------------------
 - job: macOS
   strategy:
     matrix:
@@ -94,17 +108,17 @@ jobs:
         -DPYTHON_INCLUDE_DIR=$(python-config --prefix)/include/python2.7 \
         -DPYTHON_EXECUTABLE=$(which python2)
 
-# ==============================================================================
+# ------------------------------------------------------------------------------
 # Windows
-# ==============================================================================
+# ------------------------------------------------------------------------------
 - job: Windows
   strategy:
     matrix:
-      2016 MSVC 14.16 (shared):
+      2016 MSVC 14.16:
         agentImage: 'vs2017-win2016'
         buildSharedLibs: ON
         buildDocs: ON
-      2016 MSVC 14.16 (static):
+      2016 MSVC 14.16 Static:
         agentImage: 'vs2017-win2016'
         buildSharedLibs: OFF
         buildDocs: OFF
