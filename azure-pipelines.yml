@@ -105,18 +105,13 @@ jobs:
       pyenv global 2.7.16
     displayName: Configure Python
 
-  # - template: share/azure/build-steps.yml
-  #   parameters:
-  #     cxxFlags: $(nixCxxFlags) -Wno-deprecated-register
-  #     cmakeOpts: |
-  #       -DPYTHON_LIBRARY=$(python-config --prefix)/lib/libpython2.7.dylib \
-  #       -DPYTHON_INCLUDE_DIR=$(python-config --prefix)/include/python2.7 \
-
   - template: share/azure/build-steps.yml
     parameters:
       cxxFlags: $(nixCxxFlags) -Wno-deprecated-register
       cmakeOpts: |
         -DPYTHON_EXECUTABLE=$(which python2)
+        -DPYTHON_LIBRARY=$(python-config --prefix)/lib/libpython2.7.dylib \
+        -DPYTHON_INCLUDE_DIR=$(python-config --prefix)/include/python2.7 \
 
 # ------------------------------------------------------------------------------
 # Windows
@@ -143,16 +138,6 @@ jobs:
       versionSpec: '2.7'
     displayName: Configure Python
 
-  # - template: share/azure/build-steps.yml
-  #   parameters:
-  #     buildSharedLibs: $(buildSharedLibs)
-  #     buildDocs: $(buildDocs)
-  #     cxxFlags: /std:c++$(cxxStd) /EHsc /D WIN32 /D NDEBUG
-  #     verbose: ON
-  #     cmakeOpts: |
-  #       -DCMAKE_GENERATOR_PLATFORM=x64 \
-  #       -DPYTHON_EXECUTABLE=$(which python)
-
   - template: share/azure/build-steps.yml
     parameters:
       buildSharedLibs: $(buildSharedLibs)
@@ -160,4 +145,5 @@ jobs:
       cxxFlags: /std:c++$(cxxStd) /EHsc /D WIN32 /D NDEBUG
       verbose: ON
       cmakeOpts: |
-        -DCMAKE_GENERATOR_PLATFORM=x64
+        -DCMAKE_GENERATOR_PLATFORM=x64 \
+        -DPYTHON_EXECUTABLE=$(which python)
