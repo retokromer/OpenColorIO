@@ -38,9 +38,11 @@ jobs:
       Ubuntu 18.04 GCC 6:
         agentImage: 'ubuntu-16.04'
         containerImage: michdolan/opencolorio:ubuntu18.04_gcc6
+        jobCxxFlags: ''
       Ubuntu 18.04 Clang 6:
         agentImage: 'ubuntu-16.04'
         containerImage: michdolan/opencolorio:ubuntu18.04_clang6
+        jobCxxFlags: '-Wno-deprecated-register'
   pool:
     vmImage: $(agentImage)
   container: $[ variables['containerImage'] ]
@@ -49,7 +51,7 @@ jobs:
 
   - template: share/azure/build-steps.yml
     parameters:
-      cxxFlags: $(nixCxxFlags)
+      cxxFlags: $(nixCxxFlags) $(jobCxxFlags)
 
 # --------------------------
 # SonarCloud static anlaysis
@@ -109,11 +111,12 @@ jobs:
   #     cmakeOpts: |
   #       -DPYTHON_LIBRARY=$(python-config --prefix)/lib/libpython2.7.dylib \
   #       -DPYTHON_INCLUDE_DIR=$(python-config --prefix)/include/python2.7 \
-  #       -DPYTHON_EXECUTABLE=$(which python2)
 
   - template: share/azure/build-steps.yml
     parameters:
       cxxFlags: $(nixCxxFlags) -Wno-deprecated-register
+      cmakeOpts: |
+        -DPYTHON_EXECUTABLE=$(which python2)
 
 # ------------------------------------------------------------------------------
 # Windows
@@ -148,8 +151,6 @@ jobs:
   #     verbose: ON
   #     cmakeOpts: |
   #       -DCMAKE_GENERATOR_PLATFORM=x64 \
-  #       -DPYTHON_LIBRARY=$(python -c "import sys,os;print(os.path.dirname(sys.executable))")/libs/python27.lib \
-  #       -DPYTHON_INCLUDE_DIR=$(python -c "import sys,os;print(os.path.dirname(sys.executable))")/include \
   #       -DPYTHON_EXECUTABLE=$(which python)
 
   - template: share/azure/build-steps.yml
@@ -159,5 +160,4 @@ jobs:
       cxxFlags: /std:c++$(cxxStd) /EHsc /D WIN32 /D NDEBUG
       verbose: ON
       cmakeOpts: |
-        -DCMAKE_GENERATOR_PLATFORM=x64 \
-        -DPYTHON_EXECUTABLE=$(which python)
+        -DCMAKE_GENERATOR_PLATFORM=x64
