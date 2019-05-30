@@ -36,7 +36,7 @@ jobs:
         agentImage: 'ubuntu-16.04'
         containerImage: michdolan/opencolorio:ubuntu18.04_gcc6
         buildMode: default
-      Ubuntu 18.04 GCC 6 (analysis):
+      Ubuntu 18.04 GCC 6 (SonarCloud):
         agentImage: 'ubuntu-16.04'
         containerImage: michdolan/opencolorio:ubuntu18.04_gcc6
         buildMode: sonar
@@ -46,10 +46,18 @@ jobs:
 
   steps:
 
-    - template: share/azure/build-steps.yml
-      parameters:
-        cxxFlags: $(nixCxxFlags)
-        buildMode: $(buildMode)
+    # Note: Template 'buildMode' parameter can't contain an expression
+    - ${{ if eq(variables['buildMode'], 'default') }}:
+      - template: share/azure/build-steps.yml
+        parameters:
+          cxxFlags: $(nixCxxFlags)
+          buildMode: default
+
+    - ${{ if eq(variables['buildMode'], 'sonar') }}:
+      - template: share/azure/build-steps.yml
+        parameters:
+          cxxFlags: $(nixCxxFlags)
+          buildMode: sonar
 
 # ==============================================================================
 # macOS
