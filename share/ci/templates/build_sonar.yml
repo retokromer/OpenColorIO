@@ -5,18 +5,10 @@
 
 steps:
 - bash: |
-    cd /var/opt
-    ls
-    find -name "*build-wrapper*"
-    cd /usr
-    find -name "*build-wrapper*"
-    echo $PATH
-    echo $SONAR_RUNNER_HOME
-    /var/opt/build-wrapper-linux-x86/build-wrapper-linux-x86-64 --help
-    /var/opt/sonar-scanner-3.3.0.1492-linux/bin/sonar-scanner --help
-    export PATH="$(dirname $(find -name "*/build-wrapper-linux-x86-64")):$PATH"
-    export PATH="$(dirname $(find -name "*/sonar-scanner")):$PATH"
-    export SONAR_RUNNER_HOME="$(dirname $(find -name "*/sonar-scanner"))"
+    export PATH="$(find /var/opt -maxdepth 1 -type d -name "*build-wrapper*" -print -quit):${PATH}"
+    export PATH="$(find /var/opt -maxdepth 1 -type d -name "*sonar-scanner*" -print -quit)/bin:${PATH}"
+    export SONAR_RUNNER_HOME="$(find /var/opt -maxdepth 1 -type d -name "*sonar-scanner*" -print -quit)"
+  displayName: Setup SonarCloud environment
 
 - bash: build-wrapper-linux-x86-64 --out-dir bw_output make clean all
   workingDirectory: _build
