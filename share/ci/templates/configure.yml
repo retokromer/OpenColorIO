@@ -38,6 +38,6 @@ steps:
           -DOCIO_BUILD_DOCS=${{ parameters.buildDocs }} \
           -DOCIO_WARNING_AS_ERROR=ON \
           ${{ parameters.cmakeOpts }} \
-          ../.
+          ..
   workingDirectory: _build
   displayName: Configure OCIO
