@@ -1,6 +1,3 @@
-# SPDX-License-Identifier: BSD-3-Clause
-# Copyright Contributors to the OpenColorIO Project.
-
 # azure-pipelines build file
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
 
@@ -23,7 +20,7 @@ pr:
 
 # Common variables
 variables:
-  cxxStd: '14'
+  cxxStd: 14
   nixCxxFlags: -std=c++$(cxxStd) -fPIC
 
 jobs:
@@ -32,43 +29,56 @@ jobs:
 # Linux
 # ------------------------------------------------------------------------------
 # TODO: Move Docker images to ASWF DockerHub account
+
 - job: Linux
   strategy:
     matrix:
-      Ubuntu 18.04 GCC 6:
+      Ubuntu 18.04 VFX CY2020:
         agentImage: 'ubuntu-16.04'
-        containerImage: michdolan/opencolorio:ubuntu18.04_gcc6
-        jobCxxFlags: ''
-      Ubuntu 18.04 Clang 6:
+        containerImage: michdolan/ubuntu18.04:vfx2020_py27
+        compiler: g++
+        cxxFlags: ''
+      Ubuntu 18.04 VFX CY2019:
         agentImage: 'ubuntu-16.04'
-        containerImage: michdolan/opencolorio:ubuntu18.04_clang6
-        jobCxxFlags: '-Wno-deprecated-register'
+        containerImage: michdolan/ubuntu18.04:vfx2019
+        compiler: g++
+        cxxFlags: ''
+      Ubuntu 18.04 Clang 6.0:
+        agentImage: 'ubuntu-16.04'
+        containerImage: michdolan/ubuntu18.04:vfx2019
+        compiler: clang++
+        cxxFlags: -Wno-deprecated-register
   pool:
     vmImage: $(agentImage)
   container: $[ variables['containerImage'] ]
 
   steps:
-
-  - template: share/azure/build-steps.yml
+  - template: share/ci/templates/configure.yml
     parameters:
-      cxxFlags: $(nixCxxFlags) $(jobCxxFlags)
+      compiler: $(compiler)
+      cxxFlags: $(nixCxxFlags) $(cxxFlags)
+
+  - template: share/ci/templates/build.yml
 
 # --------------------------
-# SonarCloud static anlaysis
+# SonarCloud static analysis
 # --------------------------
 - job: SonarCloud
-  displayName: SonarCloud Ubuntu 18.04 GCC 6
+  displayName: SonarCloud Ubuntu 18.04 VFX CY2019
   condition: in(variables['Build.Reason'], 'Manual', 'Schedule')
   pool:
     vmImage: 'ubuntu-16.04'
-  container: michdolan/opencolorio:ubuntu18.04_gcc6
+  container: michdolan/ubuntu18.04:vfx2019
 
   steps:
-
-  - template: share/azure/build-steps.yml
+  - template: share/ci/templates/configure.yml
     parameters:
-      cxxFlags: $(nixCxxFlags)
-      buildMode: sonar
+      cxxFlags: $(nixCxxFlags) -g -O0 -fprofile-arcs -ftest-coverage
+      cmakeOpts: |
+        -DCMAKE_EXE_LINKER_FLAGS="-lgcov" \
+        -DCMAKE_CXX_OUTPUT_EXTENSION_REPLACE=ON
+
+  - template: share/ci/templates/build_sonar.yml
 
 # ------------------------------------------------------------------------------
 # macOS
@@ -82,36 +92,18 @@ jobs:
     vmImage: $(agentImage)
   
   steps:
-
-  # See the "Command Line Tools/New Features" section of this page for an 
-  # explanation of why this workaround is necessary (for building Python):
-  # https://developer.apple.com/documentation/xcode_release_notes/xcode_10_release_notes
-  - bash: |
-      sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
-    condition: and(succeeded(), eq(variables['agentImage'], 'macOS-10.14'))
-    displayName: Install macOS SDK headers
-
-  - bash: |
-      brew update
-      brew upgrade cmake 
-      brew install glew
-      brew install pyenv
+  - bash: share/ci/scripts/install_macos.sh 2.7.16
     displayName: Install dependencies
 
-  - bash: |
-      echo 'eval "$(pyenv init -)"' >> .bash_profile
-      source .bash_profile
-      env PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install -v 2.7.16
-      pyenv global 2.7.16
-    displayName: Configure Python
-
-  - template: share/azure/build-steps.yml
+  - template: share/ci/templates/configure.yml
     parameters:
       cxxFlags: $(nixCxxFlags) -Wno-deprecated-register
       cmakeOpts: |
         -DPYTHON_INCLUDE_DIR=$(python-config --prefix)/include/python2.7 \
         -DPYTHON_LIBRARY=$(python-config --prefix)/lib/libpython2.7.dylib \
         -DPYTHON_EXECUTABLE=$(which python2)
+
+  - template: share/ci/templates/build.yml
 
 # ------------------------------------------------------------------------------
 # Windows
@@ -131,14 +123,13 @@ jobs:
     vmImage: $(agentImage)
 
   steps:
-
-  # Note: This task provides only a static Python lib
   - task: UsePythonVersion@0
+    # Note: This provides a static Python lib only
     inputs:
       versionSpec: '2.7'
     displayName: Configure Python
 
-  - template: share/azure/build-steps.yml
+  - template: share/ci/templates/configure.yml
     parameters:
       buildSharedLibs: $(buildSharedLibs)
       buildDocs: $(buildDocs)
@@ -147,3 +138,5 @@ jobs:
       cmakeOpts: |
         -DCMAKE_GENERATOR_PLATFORM=x64 \
         -DPYTHON_EXECUTABLE=$(which python)
+
+  - template: share/ci/templates/build.yml
