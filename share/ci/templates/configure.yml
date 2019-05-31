@@ -16,13 +16,13 @@ steps:
 - bash: |
     mkdir _build
     mkdir _install
+  displayName: Create build directories
 
+- bash: |
     if [ "$COMPILER" ]; then
         export CXX="$COMPILER"
     fi
-  displayName: Setup environment
 
-- bash: |
     cmake ../. \
           -DCMAKE_INSTALL_PREFIX=../_install \
           -DCMAKE_BUILD_TYPE=${{ parameters.buildType }} \

@@ -4,12 +4,6 @@
 # Note: This is currently Linux only
 
 steps:
-- bash: |
-    export PATH="$(find /var/opt -maxdepth 1 -type d -name "*build-wrapper*" -print -quit):${PATH}"
-    export PATH="$(find /var/opt -maxdepth 1 -type d -name "*sonar-scanner*" -print -quit)/bin:${PATH}"
-    export SONAR_RUNNER_HOME="$(find /var/opt -maxdepth 1 -type d -name "*sonar-scanner*" -print -quit)"
-  displayName: Setup SonarCloud environment
-
 - bash: build-wrapper-linux-x86-64 --out-dir bw_output make clean all
   workingDirectory: _build
   displayName: Build OCIO with build-wrapper
