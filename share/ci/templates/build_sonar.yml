@@ -8,7 +8,7 @@ steps:
   workingDirectory: _build
   displayName: Build OCIO with build-wrapper
 
-- template: share/ci/templates/test.yml
+- template: test.yml
 
 - bash: share/ci/scripts/run_gcov.sh
   displayName: Generate code coverage report
