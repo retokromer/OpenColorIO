@@ -10,6 +10,13 @@ steps:
     find -name "*build-wrapper*"
     cd /usr
     find -name "*build-wrapper*"
+    echo $PATH
+    echo $SONAR_RUNNER_HOME
+    /var/opt/build-wrapper-linux-x86/build-wrapper-linux-x86-64 --help
+    /var/opt/sonar-scanner-3.3.0.1492-linux/bin/sonar-scanner --help
+    export PATH="$(dirname $(find -name "*/build-wrapper-linux-x86-64")):$PATH"
+    export PATH="$(dirname $(find -name "*/sonar-scanner")):$PATH"
+    export SONAR_RUNNER_HOME="$(dirname $(find -name "*/sonar-scanner"))"
 
 - bash: build-wrapper-linux-x86-64 --out-dir bw_output make clean all
   workingDirectory: _build
