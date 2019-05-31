@@ -13,11 +13,6 @@ parameters:
   cmakeOpts: ''
 
 steps:
-- checkout: self
-  clean: true
-  fetchDepth: 50
-  displayName: Checkout OCIO source
-
 - bash: |
     mkdir _build
     mkdir _install

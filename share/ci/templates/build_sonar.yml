@@ -4,6 +4,13 @@
 # Note: This is currently Linux only
 
 steps:
+- bash: |
+    cd /var/opt
+    ls
+    find -name "*build-wrapper*"
+    cd /usr
+    find -name "*build-wrapper*"
+
 - bash: build-wrapper-linux-x86-64 --out-dir bw_output make clean all
   workingDirectory: _build
   displayName: Build OCIO with build-wrapper

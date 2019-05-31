@@ -3,13 +3,14 @@
 
 parameters:
   buildType: Release
+  cmakeOpts: ''
 
 steps:
 - bash: |
     cmake --build . \
           --target install \
           --config ${{ parameters.buildType }} \
-          -- -j2
+          ${{ parameters.cmakeOpts }}
   workingDirectory: _build
   displayName: Build OCIO
 
