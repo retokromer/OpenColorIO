@@ -8,8 +8,9 @@ parameters:
   buildGpuTests: OFF
   buildDocs: ON
   verbose: OFF
-  compiler: ''
   cxxFlags: ''
+  cxxCompiler: ''
+  cCompiler: ''
   cmakeOpts: ''
 
 steps:
@@ -19,8 +20,12 @@ steps:
   displayName: Create build directories
 
 - bash: |
-    if [ "$COMPILER" ]; then
-        export CXX="$COMPILER"
+    if [ "$CXXCOMPILER" ]; then
+        export CXX="$CXXCOMPILER"
+    fi
+
+    if [ "$CCOMPILER" ]; then
+        export CC="$CCOMPILER"
     fi
 
     cmake ../. \
