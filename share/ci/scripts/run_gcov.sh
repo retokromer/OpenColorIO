@@ -5,8 +5,9 @@ set -ex
 mkdir _coverage
 cd _coverage
 
-for d in $(find ../_build/ -name "*.dir" -type d); do
-    gcov -o "$d" -d "../$(echo $(dirname $(dirname "$d")) | cut -d/ -f3-)/*.cpp"
-done
+find ../ -name "*.cpp" -exec cp -t . {} +
+find ../ -name "*.gcno" -exec cp -t . {} +
+find ../ -name "*.gcda" -exec cp -t . {} +
+find -name "*.cpp" -exec gcov -bf {} \;
 
 cd ..
