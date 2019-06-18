@@ -13,9 +13,11 @@ fi
 
 mkdir build
 cd build
-cmake ../.
+cmake -DCMAKE_INSTALL_PREFIX=/usr/local \
+      -DCMAKE_CXX_FLAGS="-Wno-error" \
+      ../.
 make -j4
-make install
+sudo make install
 
 cd ../..
 rm -rf openexr

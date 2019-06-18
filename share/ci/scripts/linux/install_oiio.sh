@@ -14,13 +14,14 @@ fi
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=/usr/local \
+      -DCMAKE_CXX_FLAGS="-Wno-error" \
       -DOIIO_BUILD_TOOLS=OFF \
       -DOIIO_BUILD_TESTS=OFF \
       -DVERBOSE=ON \
       -DBoost_NO_BOOST_CMAKE=ON \
       ../.
 make -j4
-make install
+sudo make install
 
 cd ../..
 rm -rf oiio

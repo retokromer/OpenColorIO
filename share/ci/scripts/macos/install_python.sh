@@ -16,9 +16,6 @@ if [[ "$MACOS_MAJOR" -gt 9 && "$MACOS_MINOR" -gt 13 ]]; then
         -target /
 fi
 
-brew update
-brew upgrade cmake
-brew install glew
 brew install pyenv
 
 echo 'eval "$(pyenv init -)"' >> .bash_profile
