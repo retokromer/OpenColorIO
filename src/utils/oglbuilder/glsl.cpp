@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2003-2010 Sony Pictures Imageworks Inc., et al.
+Copyright (c) 2018 Autodesk Inc., et al.
 All Rights Reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -37,32 +37,48 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <GL/gl.h>
 #endif
 
-
-#include "glsl.h"
-
 #include <sstream>
 #include <iostream>
 
+#include <OpenColorIO/OpenColorIO.h>
+
+#include "glsl.h"
+
+
+
+OCIO_NAMESPACE_ENTER
+{
 
 namespace
 {
-    void CheckStatus()
+    bool GetGLError(std::string & error)
     {
         const GLenum glErr = glGetError();
         if(glErr!=GL_NO_ERROR)
         {
 #ifdef __APPLE__
-            // TODO: Improve the error message
-            throw OCIO::Exception("OpenGL Error");
+            // Unfortunately no gluErrorString equivalent on Mac.
+            error = "OpenGL Error";
 #else
-            throw OCIO::Exception((const char*)gluErrorString(glErr));
+            error = (const char*)gluErrorString(glErr);
 #endif
+            return true;
+        }
+        return false;
+    }
+
+    void CheckStatus()
+    {
+        std::string error;
+        if (GetGLError(error))
+        {
+            throw Exception(error.c_str());
         }
     }
 
-    void SetTextureParameters(GLenum textureType, OCIO::Interpolation interpolation)
+    void SetTextureParameters(GLenum textureType, Interpolation interpolation)
     {
-        if(interpolation==OCIO::INTERP_NEAREST)
+        if(interpolation==INTERP_NEAREST)
         {
             glTexParameteri(textureType, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(textureType, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -79,12 +95,12 @@ namespace
     }
 
     void AllocateTexture3D(unsigned index, unsigned & texId, 
-                           OCIO::Interpolation interpolation,
+                           Interpolation interpolation,
                            unsigned edgelen, const float * values)
     {
         if(values==0x0)
         {
-            throw OCIO::Exception("Missing texture data");
+            throw Exception("Missing texture data");
         }
 
         glGenTextures(1, &texId);
@@ -100,11 +116,11 @@ namespace
     }
 
     void AllocateTexture2D(unsigned index, unsigned & texId, unsigned width, unsigned height,
-                           OCIO::Interpolation interpolation, const float * values)
+                           Interpolation interpolation, const float * values)
     {
         if(values==0x0)
         {
-            throw OCIO::Exception("Missing texture data");
+            throw Exception("Missing texture data");
         }
 
         glGenTextures(1, &texId);
@@ -135,7 +151,7 @@ namespace
 
         if(!text || !*text)
         {
-            throw OCIO::Exception("Invalid fragment shader program");
+            throw Exception("Invalid fragment shader program");
         }
 
         GLuint shader;
@@ -157,7 +173,7 @@ namespace
             err += "\n";
             err += text;
 
-            throw OCIO::Exception(err.c_str());
+            throw Exception(err.c_str());
         }
         
         return shader;
@@ -169,7 +185,7 @@ namespace
 
         if (!fragShader)
         {
-            throw OCIO::Exception("Missing shader program");
+            throw Exception("Missing shader program");
         }
         else        
         {
@@ -188,18 +204,44 @@ namespace
 
             std::string err("Shader link error:\n");
             err += log;
-            throw OCIO::Exception(err.c_str());
+            throw Exception(err.c_str());
         }
     }
 }
 
 
-OpenGLBuilderRcPtr OpenGLBuilder::Create(const OCIO::GpuShaderDescRcPtr & shaderDesc)
+//////////////////////////////////////////////////////////
+
+void OpenGLBuilder::Uniform::setUp(unsigned program)
+{
+    m_handle = glGetUniformLocation(program, m_name.c_str());
+
+    std::string error;
+    if (GetGLError(error))
+    {
+        std::string err("Shader parameter ");
+        err += m_name;
+        err += " not found: ";
+        throw Exception(err.c_str());
+    }
+}
+
+void OpenGLBuilder::Uniform::use()
+{
+    // Update value.
+    glUniform1f(m_handle, (GLfloat)m_value->getDoubleValue());
+}
+
+
+
+//////////////////////////////////////////////////////////
+
+OpenGLBuilderRcPtr OpenGLBuilder::Create(const GpuShaderDescRcPtr & shaderDesc)
 {
     return OpenGLBuilderRcPtr(new OpenGLBuilder(shaderDesc));
 }
 
-OpenGLBuilder::OpenGLBuilder(const OCIO::GpuShaderDescRcPtr & shaderDesc)
+OpenGLBuilder::OpenGLBuilder(const GpuShaderDescRcPtr & shaderDesc)
     :   m_shaderDesc(shaderDesc)
     ,   m_startIndex(0)
     ,   m_fragShader(0)
@@ -230,80 +272,80 @@ void OpenGLBuilder::allocateAllTextures(unsigned startIndex)
 {
     deleteAllTextures();
 
-    // This is the first available index for the textures
+    // This is the first available index for the textures.
     m_startIndex = startIndex;
     unsigned currIndex = m_startIndex;
 
-    // Process the 3D LUT first
+    // Process the 3D LUT first.
 
     const unsigned maxTexture3D = m_shaderDesc->getNum3DTextures();
     for(unsigned idx=0; idx<maxTexture3D; ++idx)
     {
-        // 1. Get the information of the 3D LUT
+        // 1. Get the information of the 3D LUT.
 
         const char* name = 0x0;
         const char* uid  = 0x0;
         unsigned edgelen = 0;
-        OCIO::Interpolation interpolation = OCIO::INTERP_LINEAR;
+        Interpolation interpolation = INTERP_LINEAR;
         m_shaderDesc->get3DTexture(idx, name, uid, edgelen, interpolation);
 
         if(!name || !*name || !uid || !*uid || edgelen==0)
         {
-            throw OCIO::Exception("The texture data are corrupted");
+            throw Exception("The texture data is corrupted");
         }
 
         const float* values = 0x0;
         m_shaderDesc->get3DTextureValues(idx, values);
         if(!values)
         {
-            throw OCIO::Exception("The texture values are missing");
+            throw Exception("The texture values are missing");
         }
 
-        // 2. Allocate the 3D LUT
+        // 2. Allocate the 3D LUT.
 
         unsigned texId = 0;
         AllocateTexture3D(currIndex, texId, interpolation, edgelen, values);
 
-        // 3. Keep the texture id & name for the later enabling
+        // 3. Keep the texture id & name for the later enabling.
 
         m_textureIds.push_back(TextureId(texId, name, GL_TEXTURE_3D));
 
         currIndex++;
     }
 
-    // Process the 1D LUTs
+    // Process the 1D LUTs.
 
     const unsigned maxTexture2D = m_shaderDesc->getNumTextures();
     for(unsigned idx=0; idx<maxTexture2D; ++idx)
     {
-        // 1. Get the information of the 1D LUT
+        // 1. Get the information of the 1D LUT.
 
         const char* name = 0x0;
         const char* uid  = 0x0;
         unsigned width = 0;
         unsigned height = 0;
-        OCIO::GpuShaderDesc::TextureType channel = OCIO::GpuShaderDesc::TEXTURE_RGB_CHANNEL;
-        OCIO::Interpolation interpolation = OCIO::INTERP_LINEAR;
+        GpuShaderDesc::TextureType channel = GpuShaderDesc::TEXTURE_RGB_CHANNEL;
+        Interpolation interpolation = INTERP_LINEAR;
         m_shaderDesc->getTexture(idx, name, uid, width, height, channel, interpolation);
 
         if(!name || !*name || !uid || !*uid || width==0)
         {
-            throw OCIO::Exception("The texture data are corrupted");
+            throw Exception("The texture data is corrupted");
         }
 
         const float * values = 0x0;
         m_shaderDesc->getTextureValues(idx, values);
         if(!values)
         {
-            throw OCIO::Exception("The texture values are missing");
+            throw Exception("The texture values are missing");
         }
 
-        // 2. Allocate the 1D LUT (a 2D texture is needed to hold large LUTs)
+        // 2. Allocate the 1D LUT (a 2D texture is needed to hold large LUTs).
 
         unsigned texId = 0;
         AllocateTexture2D(currIndex, texId, width, height, interpolation, values);
 
-        // 3. Keep the texture id & name for the later enabling
+        // 3. Keep the texture id & name for the later enabling.
 
         unsigned type = (height > 1) ? GL_TEXTURE_2D : GL_TEXTURE_1D;
         m_textureIds.push_back(TextureId(texId, name, type));
@@ -317,7 +359,7 @@ void OpenGLBuilder::deleteAllTextures()
     for(size_t idx=0; idx<max; ++idx)
     {
         const TextureId& data = m_textureIds[idx];
-        glDeleteTextures(1, &data.id);
+        glDeleteTextures(1, &data.m_id);
     }
 
     m_textureIds.clear();
@@ -330,11 +372,41 @@ void OpenGLBuilder::useAllTextures()
     {
         const TextureId& data = m_textureIds[idx];
         glActiveTexture((GLenum)(GL_TEXTURE0 + m_startIndex + idx));
-        glBindTexture(data.type, data.id);
+        glBindTexture(data.m_type, data.m_id);
         glUniform1i(
             glGetUniformLocation(m_program, 
-                                 data.name.c_str()), 
+                                 data.m_name.c_str()), 
                                  GLint(m_startIndex + idx) );
+    }
+}
+
+void OpenGLBuilder::linkAllUniforms()
+{
+    deleteAllUniforms();
+
+    const unsigned maxUniforms = m_shaderDesc->getNumUniforms();
+    for (unsigned idx = 0; idx < maxUniforms; ++idx)
+    {
+        const char * name;
+        DynamicPropertyRcPtr value;
+        m_shaderDesc->getUniform(idx, name, value);
+        // Transfer uniform.
+        m_uniforms.emplace_back(name, value);
+        // Connect uniform with program.
+        m_uniforms.back().setUp(m_program);
+    }
+}
+
+void OpenGLBuilder::deleteAllUniforms()
+{
+    m_uniforms.clear();
+}
+
+void OpenGLBuilder::useAllUniforms()
+{
+    for (auto uniform : m_uniforms)
+    {
+        uniform.use();
     }
 }
 
@@ -365,8 +437,9 @@ unsigned OpenGLBuilder::buildProgram(const std::string & clientShaderProgram)
         m_fragShader = CompileShaderText(GL_FRAGMENT_SHADER, os.str().c_str());
 
         LinkShaders(m_program, m_fragShader);
-
         m_shaderCacheID = shaderCacheID;
+
+        linkAllUniforms();
     }
 
     return m_program;
@@ -384,7 +457,7 @@ unsigned OpenGLBuilder::getProgramHandle()
 
 unsigned OpenGLBuilder::GetTextureMaxWidth()
 {
-    // Arbitrary huge number only to find the limit
+    // Arbitrary huge number only to find the limit.
     static unsigned maxTextureSize = 256 * 1024;
 
     CheckStatus();
@@ -412,7 +485,7 @@ unsigned OpenGLBuilder::GetTextureMaxWidth()
 
 #ifndef __APPLE__
         //
-        // In case of Linux, if glTexImage2D() succeed
+        // In case of Linux, if glTexImage2D() succeeds
         //  glGetTexLevelParameteriv() could fail.
         //
         // In case of OSX, glTexImage2D() will provide the right result,
@@ -439,7 +512,7 @@ unsigned OpenGLBuilder::GetTextureMaxWidth()
 
     if(w==1)
     {
-        throw OCIO::Exception("Maximum texture size unknown");
+        throw Exception("Maximum texture size unknown");
     }
 
     CheckStatus();
@@ -447,3 +520,5 @@ unsigned OpenGLBuilder::GetTextureMaxWidth()
     return w;
 }
 
+}
+OCIO_NAMESPACE_EXIT

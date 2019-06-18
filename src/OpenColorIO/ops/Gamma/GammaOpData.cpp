@@ -74,24 +74,58 @@ std::string GetParametersString(const GammaOpData::Params & params)
     return oss.str();
 }
 
+static constexpr const char * GAMMA_STYLE_BASIC_FWD    = "basicFwd";
+static constexpr const char * GAMMA_STYLE_BASIC_REV    = "basicRev";
+static constexpr const char * GAMMA_STYLE_MONCURVE_FWD = "moncurveFwd";
+static constexpr const char * GAMMA_STYLE_MONCURVE_REV = "moncurveRev";
+
 }; // anon
 
+GammaOpData::Style GammaOpData::ConvertStringToStyle(const char * str)
+{
+    if (str && *str)
+    {
+        if (0 == Platform::Strcasecmp(str, GAMMA_STYLE_BASIC_FWD))
+        {
+            return BASIC_FWD;
+        }
+        else if (0 == Platform::Strcasecmp(str, GAMMA_STYLE_BASIC_REV))
+        {
+            return BASIC_REV;
+        }
+        else if (0 == Platform::Strcasecmp(str, GAMMA_STYLE_MONCURVE_FWD))
+        {
+            return MONCURVE_FWD;
+        }
+        else if (0 == Platform::Strcasecmp(str, GAMMA_STYLE_MONCURVE_REV))
+        {
+            return MONCURVE_REV;
+        }
 
-const char * GammaOpData::convertStyleToString(Style style)
+        std::ostringstream os;
+        os << "Unknown gamma style: '" << str << "'.";
+
+        throw Exception(os.str().c_str());
+    }
+    throw Exception("Missing gamma style.");
+    return BASIC_FWD;
+}
+
+const char * GammaOpData::ConvertStyleToString(Style style)
 {
     switch(style)
     {
         case BASIC_FWD:
-            return "basicFwd";
+            return GAMMA_STYLE_BASIC_FWD;
             break;
         case BASIC_REV:
-            return "basicRev";
+            return GAMMA_STYLE_BASIC_REV;
             break;
         case MONCURVE_FWD:
-            return "moncurveFwd";
+            return GAMMA_STYLE_MONCURVE_FWD;
             break;
         case MONCURVE_REV:
-            return "moncurveRev";
+            return GAMMA_STYLE_MONCURVE_REV;
             break;
     }
 
@@ -100,7 +134,7 @@ const char * GammaOpData::convertStyleToString(Style style)
 
     throw Exception(ss.str().c_str());
 
-    return "basicFwd";
+    return GAMMA_STYLE_BASIC_FWD;
 }
 
 GammaOpData::GammaOpData()
@@ -515,16 +549,19 @@ GammaOpDataRcPtr GammaOpData::compose(const GammaOpData & B) const
     return outOp;
 }
 
-bool GammaOpData::operator==(const GammaOpData & other) const
+bool GammaOpData::operator==(const OpData & other) const
 {
     if(this==&other) return true;
 
-    return  OpData::operator==(other) &&
-            m_style == other.m_style &&
-            m_redParams == other.m_redParams &&
-            m_greenParams == other.m_greenParams &&
-            m_blueParams == other.m_blueParams &&
-            m_alphaParams == other.m_alphaParams;
+    if(!OpData::operator==(other)) return false;
+
+    const GammaOpData* gop = static_cast<const GammaOpData*>(&other);
+
+    return  m_style == gop->m_style &&
+            m_redParams == gop->m_redParams &&
+            m_greenParams == gop->m_greenParams &&
+            m_blueParams == gop->m_blueParams &&
+            m_alphaParams == gop->m_alphaParams;
 }
 
 void GammaOpData::finalize()
@@ -534,7 +571,7 @@ void GammaOpData::finalize()
     std::ostringstream cacheIDStream;
     cacheIDStream << getID() << " ";
 
-    cacheIDStream << GammaOpData::convertStyleToString(getStyle()) << " ";
+    cacheIDStream << GammaOpData::ConvertStyleToString(getStyle()) << " ";
 
     cacheIDStream << "r:" << GetParametersString(getRedParams())   << " ";
     cacheIDStream << "g:" << GetParametersString(getGreenParams()) << " ";

@@ -585,18 +585,14 @@ bool Lut1DOpData::haveEqualBasics(const Lut1DOpData & B) const
 bool Lut1DOpData::operator==(const OpData & other) const
 {
     if (this == &other) return true;
-    if (getType() != other.getType()) return false;
+
+    if (!OpData::operator==(other)) return false;
 
     const Lut1DOpData* lop = static_cast<const Lut1DOpData*>(&other);
 
     // NB: The m_invQuality is not currently included.
     if (m_direction != lop->m_direction
         || m_interpolation != lop->m_interpolation)
-    {
-        return false;
-    }
-
-    if (!OpData::operator==(*lop))
     {
         return false;
     }
@@ -803,10 +799,7 @@ void ComposeVec(Lut1DOpDataRcPtr & A, const OpRcPtrVec & B)
     CreateScaleOp(ops, iScale4, TRANSFORM_DIR_FORWARD);
 
     // Copy and append B.
-    for(OpRcPtrVec::size_type i=0, size = B.size(); i<size; ++i)
-    {
-        ops.push_back(B[i]);
-    }
+    ops += B;
 
     // Insert an op to compensate for the bitdepth scaling of B.
     //

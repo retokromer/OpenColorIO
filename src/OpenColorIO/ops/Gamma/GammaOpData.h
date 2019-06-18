@@ -87,7 +87,8 @@ public:
         MONCURVE_REV
     };
 
-    static const char * convertStyleToString(Style style);
+    static Style ConvertStringToStyle(const char * str);
+    static const char * ConvertStyleToString(Style style);
 
     typedef std::vector<double> Params;
 
@@ -159,7 +160,7 @@ public:
 
     virtual void validateParameters() const;
 
-    bool operator==(const GammaOpData& other) const;
+    bool operator==(const OpData& other) const override;
 
     virtual void finalize() override;
 

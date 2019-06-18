@@ -159,6 +159,8 @@ public:
 
     ~Impl() {}
 
+    Impl(const Impl &) = delete;
+
     Impl& operator=(const Impl & rhs)
     {
         if(this!=&rhs)
@@ -178,9 +180,6 @@ public:
     }
 
     TransformDirection m_direction;
-
-private:
-    Impl(const Impl &);
 };
 
 ///////////////////////////////////////////////////////////////////////////
@@ -339,7 +338,8 @@ OIIO_ADD_TEST(FixedFunctionTransform, basic)
 
     OIIO_CHECK_NO_THROW(func->setStyle(OCIO::FIXED_FUNCTION_REC2100_SURROUND));
     OIIO_CHECK_THROW_WHAT(func->validate(), OCIO::Exception, 
-                          "The style 'REC2100_Surround' must only have one parameter but 0 found.");
+                          "The style 'REC2100_Surround' must have "
+                          "one parameter but 0 found.");
 
     OIIO_CHECK_EQUAL(func->getNumParams(), 0);
     const double values[1] = { 1. };
@@ -353,7 +353,8 @@ OIIO_ADD_TEST(FixedFunctionTransform, basic)
 
     OIIO_CHECK_NO_THROW(func->setStyle(OCIO::FIXED_FUNCTION_ACES_DARK_TO_DIM_10));
     OIIO_CHECK_THROW_WHAT(func->validate(), OCIO::Exception, 
-                          "The style 'ACES_DarkToDim10 (Forward)' must have zero parameters but 1 found.");
+                          "The style 'ACES_DarkToDim10 (Forward)' must have "
+                          "zero parameters but 1 found.");
 }
 
 #endif

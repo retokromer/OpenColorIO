@@ -89,9 +89,15 @@ OCIO_NAMESPACE_ENTER
     {
     public:
         //!cpp:function:: Constructor that takes a string as the exception message.
-        Exception(const char *) throw();
+        explicit Exception(const char *);
         //!cpp:function:: Constructor that takes an existing exception.
-        Exception(const Exception&) throw();
+        Exception(const Exception &);
+
+        ~Exception();
+
+    private:
+        Exception();
+        Exception & operator= (const Exception &);
     };
     
     //!cpp:class:: An exception class for errors detected at
@@ -105,9 +111,15 @@ OCIO_NAMESPACE_ENTER
     {
     public:
         //!cpp:function:: Constructor that takes a string as the exception message.
-        ExceptionMissingFile(const char *) throw();
+        explicit ExceptionMissingFile(const char *);
         //!cpp:function:: Constructor that takes an existing exception.
-        ExceptionMissingFile(const ExceptionMissingFile&) throw();
+        ExceptionMissingFile(const ExceptionMissingFile &);
+
+        ~ExceptionMissingFile();
+
+    private:
+        ExceptionMissingFile();
+        ExceptionMissingFile & operator= (const ExceptionMissingFile &);
     };
     
     ///////////////////////////////////////////////////////////////////////////
@@ -944,13 +956,22 @@ OCIO_NAMESPACE_ENTER
         //!cpp:function::
         bool isNoOp() const;
         
-        //!cpp:function:: does the processor represent an image transformation that
-        //                introduces crosstalk between the image channels
+        //!cpp:function:: True if the image transformation is non-separable.
+        //                For example, if a change in red may also cause a
+        //                change in green or blue.
         bool hasChannelCrosstalk() const;
         
         //!cpp:function::
         ConstProcessorMetadataRcPtr getMetadata() const;
-        
+
+        //!cpp:function:: The returned pointer may be used to set the value of any
+        //                dynamic properties of the requested type.  Throws if the
+        //                requested property is not found.  Note that if the
+        //                processor contains several ops that support the
+        //                requested property, only ones for which dynamic has
+        //                been enabled will be controlled.
+        DynamicPropertyRcPtr getDynamicProperty(DynamicPropertyType type) const;
+
         ///////////////////////////////////////////////////////////////////////////
         //!rst::
         // CPU Renderer
@@ -1046,8 +1067,8 @@ OCIO_NAMESPACE_ENTER
         CPUProcessor();
         ~CPUProcessor();
         
-        CPUProcessor(const CPUProcessor &) = delete;
-        CPUProcessor& operator= (const CPUProcessor &) = delete;
+        CPUProcessor(const CPUProcessor &);
+        CPUProcessor& operator= (const CPUProcessor &);
         
         static void deleter(CPUProcessor* c);
 
@@ -1564,18 +1585,12 @@ OCIO_NAMESPACE_ENTER
             TEXTURE_RGB_CHANNEL
         };
 
-        enum UniformType
-        {
-            UNIFORM_BOOL_TYPE,
-            UNIFORM_FLOAT_TYPE
-        };
-
-        // Note: Support for uniforms will be added in a follow-up
+        //!cpp:function:: Uniform related methods
         virtual unsigned getNumUniforms() const = 0;
         virtual void getUniform(unsigned index, const char *& name, 
-                                UniformType & type, void *& value) const = 0;
-        virtual void addUniform(unsigned index, const char * name, 
-                                UniformType type, void * value) = 0;
+                                DynamicPropertyRcPtr & value) const = 0;
+        virtual bool addUniform(const char * name, 
+                                DynamicPropertyRcPtr value) = 0;
 
         //!cpp:function:: 1D lut related methods
         virtual unsigned getTextureMaxWidth() const = 0;
